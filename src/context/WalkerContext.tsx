@@ -14,9 +14,9 @@ export interface WalkerApplicant {
     image: string;
     badges: string[];
     documents: {
-        idCard: string;
-        policeRecord: string;
-        certificate: string;
+        idCard: string | File;
+        policeRecord: string | File;
+        certificate: string | File;
     };
     status: 'Pending' | 'Approved' | 'Rejected';
     dateApplied: string;

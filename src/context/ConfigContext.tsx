@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 // Define the Plan interface
 export interface Plan {

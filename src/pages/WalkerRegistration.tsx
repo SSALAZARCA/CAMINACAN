@@ -57,7 +57,7 @@ const WalkerRegistration: React.FC = () => {
             city: formData.city,
             neighborhood: formData.neighborhood,
             experience: formData.experience,
-            about: "Nuevo paseador en CaminaCan",
+            bio: "Nuevo paseador en CaminaCan",
             price: 15000,
             image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?fit=crop&w=200&h=200",
             badges: ["Nuevo Ingreso"],

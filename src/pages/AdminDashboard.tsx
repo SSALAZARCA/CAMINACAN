@@ -369,7 +369,7 @@ const AdminDashboard: React.FC = () => {
                                             <div className="flex gap-2">
                                                 {Object.entries(app.documents).map(([key, val]) => (
                                                     <div key={key} className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 cursor-pointer hover:bg-blue-100">
-                                                        <FileText size={12} /> {key}: {val}
+                                                        <FileText size={12} /> {key}: {val instanceof File ? val.name : val}
                                                     </div>
                                                 ))}
                                             </div>
