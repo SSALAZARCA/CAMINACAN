@@ -32,7 +32,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="min-h-screen flex flex-col relative">
       {/* Navigation */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-2' : 'bg-white py-4 shadow-sm'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-2' : 'bg-transparent py-4'
           }`}
       >
         <div className="container flex flex-wrap items-center justify-between gap-4">
@@ -40,39 +40,56 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div className={`p-2 rounded-full text-white shadow-glow transition-transform group-hover:scale-110 ${isScrolled ? 'bg-primary scale-90' : 'bg-primary'}`} style={{ backgroundColor: 'var(--color-primary)' }}>
               <Dog size={isScrolled ? 20 : 24} color="#333" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-gray-800">CaminaCan</span>
+            <span className={`font-bold text-xl tracking-tight transition-colors ${isScrolled ? 'text-gray-800' : 'text-gray-900'}`}>CaminaCan</span>
           </Link>
 
           {/* Desktop Menu - Main Links */}
-          <div className="hidden md:flex flex-1 items-center justify-center gap-4 lg:gap-8">
-            <Link to="/" className="font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">{t('home')}</Link>
-            <Link to="/paseadores" className="font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">{t('find_walker')}</Link>
-            <Link to="/live-demo" className="font-medium text-red-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50 px-2 lg:px-3 py-1 rounded-full whitespace-nowrap">
+          <div className="hidden md:flex flex-1 items-center justify-center gap-2">
+            {[
+              { to: '/', label: t('home') },
+              { to: '/paseadores', label: t('find_walker') },
+              { to: '/planes', label: t('plans') },
+              { to: '/tienda', label: t('store') }
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="px-4 py-2 font-medium text-sm text-gray-600 hover:text-primary hover:bg-yellow-50 rounded-full transition-all"
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            <Link to="/live-demo" className="ml-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-bold flex items-center gap-2 border border-red-100 hover:bg-red-100 transition-colors animate-pulse hover:animate-none">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <span className="text-xs lg:text-sm font-bold">Live Demo</span>
+              Live Demo
             </Link>
-            <Link to="/planes" className="font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">{t('plans')}</Link>
-            <Link to="/tienda" className="font-medium text-sm lg:text-base text-gray-600 hover:text-primary transition-colors">{t('store')}</Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-6">
-            <div className="flex items-center gap-4 text-sm font-medium text-gray-500 border-r border-gray-200 pr-4 mr-2">
-              <Link to="/registro-paseador" className="hover:text-gray-900 transition-colors whitespace-nowrap">
-                {t('work_with_us')}
-              </Link>
-              <Link to="/mensajes" className="hover:text-primary transition-colors">Mensajes</Link>
-            </div>
+          <div className="hidden md:flex items-center gap-4">
+            <Link to="/registro-paseador" className="text-sm font-medium text-gray-600 hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-all">
+              {t('work_with_us')}
+            </Link>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-gray-200"></div>
 
             <div className="flex items-center gap-3">
-              <button onClick={changeLanguage} className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase hover:bg-gray-200 text-gray-600">
-                {i18n.language}
+              <button
+                onClick={changeLanguage}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-xs transition-colors"
+                title="Cambiar idioma"
+              >
+                {i18n.language.toUpperCase()}
               </button>
+
               <Notifications />
-              <Link to="/login" className="btn btn-primary text-sm px-5 py-2.5 shadow-md">
-                <User size={18} />
+
+              <Link to="/login" className="flex items-center gap-2 bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                <User size={16} />
                 <span>{t('my_account')}</span>
               </Link>
             </div>
@@ -80,7 +97,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Mobile Toggle */}
           <button
-            className="md:hidden p-2 text-gray-800"
+            className="md:hidden p-2 text-gray-800 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
