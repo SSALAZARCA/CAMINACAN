@@ -23,12 +23,11 @@ if (storageProvider === 'cloudinary') {
         params: {
             folder: 'caminacan_uploads',
             allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
-            // @ts-ignore
-            public_id: (req, file) => {
+            public_id: (req: any, file: any) => {
                 const name = file.originalname.split('.')[0];
                 return `${name}-${Date.now()}`;
             }
-        }
+        } as any
     });
 } else {
     // Fallback to local
