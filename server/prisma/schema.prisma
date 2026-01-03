@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  WALKER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDIENTE
+  CONFIRMADO
+  EN_PROGRESO
+  ESPERANDO_CONFIRMACION
+  FINALIZADO
+  CANCELADO
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(OWNER)
+  credits       Int       @default(0)
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  pets          Pet[]
+  walkerProfile WalkerProfile?
+  bookings      Booking[] @relation("OwnerBookings")
+  reviewsGiven  Review[]  @relation("ReviewsFromOwner")
+  orders        Order[]
+  wishlist      Product[] @relation("UserWishlist")
+  
+  sentMessages      Message[] @relation("SentMessages")
+  receivedMessages  Message[] @relation("ReceivedMessages")
+  notifications     Notification[]
+}
+
+model WalkerProfile {
+  id            String    @id @default(cuid())
+  bio           String?
+  pricePerHour  Float     @default(15000)
+  experience    String?
+  city          String
+  neighborhood  String
+  rating        Float     @default(5.0)
+  badges        String[]  @default([])
+  gallery       String[]  @default([])
+  availableSlots Json?    // Arreglo de strings o slots
+  
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  
+  bookings      Booking[] @relation("WalkerBookings")
+  reviews       Review[]  @relation("ReviewsForWalker")
+}
+
+model Pet {
+  id            String    @id @default(cuid())
+  name          String
+  breed         String
+  age           Int
+  notes         String?
+  image         String?
+  
+  ownerId       String
+  owner         User      @relation(fields: [ownerId], references: [id])
+  
+  bookings      Booking[] @relation("BookingPets")
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  serviceType   String
+  date          String
+  time          String
+  status        BookingStatus @default(PENDIENTE)
+  totalPrice    Float
+  isPaidToWalker Boolean       @default(false)
+  
+  liveData      Json?         
+  
+  ownerId       String
+  owner         User          @relation("OwnerBookings", fields: [ownerId], references: [id])
+  
+  walkerId      String
+  walker        WalkerProfile @relation("WalkerBookings", fields: [walkerId], references: [id])
+  
+  pets          Pet[]         @relation("BookingPets")
+  review        Review?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Review {
+  id            String    @id @default(cuid())
+  rating        Int
+  comment       String?
+  
+  bookingId     String    @unique
+  booking       Booking   @relation(fields: [bookingId], references: [id])
+  
+  walkerId      String
+  walker        WalkerProfile @relation("ReviewsForWalker", fields: [walkerId], references: [id])
+  
+  ownerId       String
+  owner         User      @relation("ReviewsFromOwner", fields: [ownerId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  category    String
+  price       Float
+  image       String
+  description String
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+  wishlistedBy User[] @relation("UserWishlist")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  userName    String
+  total       Float
+  status      String      @default("Pending") // Pending, Shipped, Delivered, Cancelled
+  date        DateTime    @default(now())
+  address     String
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // info, success, warning, error
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
