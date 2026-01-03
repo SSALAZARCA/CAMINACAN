@@ -222,10 +222,10 @@ const Home: React.FC = () => {
             {/* Owners CTA */}
             <section className="py-20 relative overflow-hidden">
                 <div className="container relative z-10">
-                    <div className="bg-secondary rounded-[40px] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+                    <div className="bg-primary rounded-[40px] p-12 md:p-20 text-center text-gray-900 relative overflow-hidden shadow-2xl">
                         <div className="relative z-10 max-w-3xl mx-auto">
                             <h2 className="text-4xl md:text-5xl font-black mb-8">El primer paseo va por nuestra cuenta</h2>
-                            <p className="text-blue-100 text-xl mb-10 leading-relaxed">
+                            <p className="text-gray-800 text-xl mb-10 leading-relaxed font-medium">
                                 Regístrate hoy y recibe un descuento del 100% en tu primer paseo de 30 minutos. Tu perro te lo agradecerá.
                             </p>
                             <Link to="/register" className="inline-block bg-white text-secondary px-10 py-5 rounded-full font-bold text-xl hover:bg-yellow-400 hover:text-gray-900 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
