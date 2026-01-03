@@ -16,7 +16,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Expose port (Matches standard Express port)
-EXPOSE 4000
+EXPOSE 9000
 
 # Start command
 CMD ["npm", "start"]
