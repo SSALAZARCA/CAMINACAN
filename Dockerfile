@@ -2,9 +2,9 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# Install dependencies (caching)
+# Install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source
 COPY . .
