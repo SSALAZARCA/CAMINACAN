@@ -59,7 +59,8 @@ interface WalkerContextType {
 const WalkerContext = createContext<WalkerContextType | undefined>(undefined);
 
 export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [reviews] = useState<Review[]>([]); // Removed setReviews to avoid unused error
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [applicants, setApplicants] = useState<WalkerApplicant[]>([]);
     const [activeWalkers, setActiveWalkers] = useState<ActiveWalker[]>([]);
 
