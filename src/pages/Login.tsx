@@ -22,7 +22,7 @@ const Login: React.FC = () => {
             else if (storedUser.role === 'walker') navigate('/walker');
             else navigate('/dashboard');
         } else {
-            setError('Credenciales inválidas. Usa demo123 (Dueño), admin123 (Admin) o walker123 (Paseador).');
+            setError('Credenciales inválidas. Por favor verifica tus datos.');
         }
     };
 
