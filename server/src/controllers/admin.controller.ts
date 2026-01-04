@@ -107,48 +107,85 @@ export const processPayout = async (req: AuthRequest, res: Response) => {
     }
 };
 
+// --- USERS ---
+
+export const getUsers = async (req: AuthRequest, res: Response) => {
+    try {
+        if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only' });
+
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                avatar: true,
+                _count: {
+                    select: {
+                        pets: true,
+                        bookings: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Error fetching users' });
+    }
+};
+
+// --- CONFIG ---
+
+export const getSystemConfig = async (req: AuthRequest, res: Response) => {
+    try {
+        if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only' });
+
+        const config = await prisma.systemConfig.findUnique({
+            where: { key: 'default' }
+        });
+
+        // Don't expose password if not needed, or send masked? 
+        // Admin needs to see it to edit it? Usually we send empty or masked.
+        // For simplicity sending plain text as it is super admin panel.
+        res.json(config || {});
+    } catch (error) {
+        console.error('Error fetching config:', error);
+        res.status(500).json({ error: 'Error fetching config' });
+    }
+};
+
 export const updateConfig = async (req: AuthRequest, res: Response) => {
     try {
         if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only' });
 
-        const { host, port, user, pass, adminEmail } = req.body;
+        const { host, port, user, pass, adminEmail, platformFee } = req.body;
 
-        // you would use a Config table in DB or a secure secrets manager.
-        // For this local/demo setup, we will read and rewrite the .env file.
-        const envPath = path.resolve(__dirname, '../../.env');
-        let envContent = '';
-
-        if (fs.existsSync(envPath)) {
-            envContent = fs.readFileSync(envPath, 'utf8');
-        }
-
-        // Helper to update or add key
-        const updateKey = (key: string, val: string) => {
-            const regex = new RegExp(`^${key}=.*`, 'm');
-            if (regex.test(envContent)) {
-                envContent = envContent.replace(regex, `${key}=${val}`);
-            } else {
-                envContent += `\n${key}=${val}`;
+        const config = await prisma.systemConfig.upsert({
+            where: { key: 'default' },
+            update: {
+                smtpHost: host,
+                smtpPort: Number(port),
+                smtpUser: user,
+                smtpPass: pass,
+                adminEmail: adminEmail,
+                platformFee: platformFee ? Number(platformFee) : undefined
+            },
+            create: {
+                key: 'default',
+                smtpHost: host,
+                smtpPort: Number(port),
+                smtpUser: user,
+                smtpPass: pass,
+                adminEmail: adminEmail,
+                platformFee: platformFee ? Number(platformFee) : 0.20
             }
-        };
+        });
 
-        if (host) updateKey('SMTP_HOST', host);
-        if (port) updateKey('SMTP_PORT', port);
-        if (user) updateKey('SMTP_USER', user);
-        if (pass) updateKey('SMTP_PASS', pass);
-        if (adminEmail) updateKey('ADMIN_EMAIL', adminEmail);
-
-        fs.writeFileSync(envPath, envContent.trim());
-
-        // Reload environment variables for the current process
-        // Note: Some libraries might require a full restart to pick up changes
-        process.env.SMTP_HOST = host || process.env.SMTP_HOST;
-        process.env.SMTP_PORT = port || process.env.SMTP_PORT;
-        process.env.SMTP_USER = user || process.env.SMTP_USER;
-        process.env.SMTP_PASS = pass || process.env.SMTP_PASS;
-        process.env.ADMIN_EMAIL = adminEmail || process.env.ADMIN_EMAIL;
-
-        res.json({ success: true, message: 'Configuration updated successfully' });
+        res.json({ success: true, message: 'Configuration saved to database', config });
     } catch (error) {
         console.error("Config update error", error);
         res.status(500).json({ error: 'Error updating configuration' });

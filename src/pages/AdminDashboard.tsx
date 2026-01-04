@@ -13,13 +13,13 @@ const AdminDashboard: React.FC = () => {
     const { applicants, activeWalkers, approveApplicant, rejectApplicant, suspendWalker, activateWalker, deleteWalker } = useWalker();
     const { products, orders, addProduct, updateProduct, deleteProduct, updateOrderStatus } = useStore();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'financial' | 'applicants' | 'walkers' | 'store' | 'planes' | 'config'>('financial');
+    const [activeTab, setActiveTab] = useState<'financial' | 'applicants' | 'walkers' | 'store' | 'planes' | 'config' | 'users'>('financial');
     const [smtpConfig, setSmtpConfig] = useState({ host: '', port: '', user: '', pass: '', adminEmail: '' });
     const [isEditingProduct, setIsEditingProduct] = useState<number | null>(null);
     const [newProduct, setNewProduct] = useState({ name: '', price: '', category: 'Alimento', stock: '', description: '', image: '' });
 
     // Config functionality
-    const { fees, updateFees, plans, addPlan, updatePlan, deletePlan, updateSystemConfig } = useConfig();
+    const { fees, updateFees, plans, addPlan, updatePlan, deletePlan, updateSystemConfig, getSystemConfig } = useConfig();
     const [isEditingPlan, setIsEditingPlan] = useState<string | null>(null);
     const [newPlan, setNewPlan] = useState({ name: '', price: '', period: 'mensual', description: '', features: [''], highlight: false });
     const [tempFees, setTempFees] = useState(fees);
@@ -39,6 +39,7 @@ const AdminDashboard: React.FC = () => {
 
     const [statsData, setStatsData] = useState<any>(null);
     const [payouts, setPayouts] = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
 
     const { token } = useAuth();
 
@@ -60,6 +61,34 @@ const AdminDashboard: React.FC = () => {
         };
         if (token) fetchData();
     }, [token]);
+
+    // Fetch tab specific data
+    React.useEffect(() => {
+        if (!token) return;
+
+        if (activeTab === 'users') {
+            fetch(`${API_URL}/admin/users`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+                .then(res => res.json())
+                .then(data => setUsers(data))
+                .catch(err => console.error("Error fetching users", err));
+        }
+
+        if (activeTab === 'config') {
+            getSystemConfig().then(config => {
+                if (config) {
+                    setSmtpConfig({
+                        host: config.smtpHost || '',
+                        port: config.smtpPort || '',
+                        user: config.smtpUser || '',
+                        pass: config.smtpPass || '',
+                        adminEmail: config.adminEmail || ''
+                    });
+                }
+            });
+        }
+    }, [activeTab, token, getSystemConfig]);
 
 
     const processPayout = async (walkerId: string) => {
@@ -122,6 +151,10 @@ const AdminDashboard: React.FC = () => {
                                 onClick={() => setActiveTab('applicants')}
                                 className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'applicants' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Solicitudes ({applicants.length})</button>
+                            <button
+                                onClick={() => setActiveTab('users')}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                            >Usuarios</button>
                             <button
                                 onClick={() => setActiveTab('walkers')}
                                 className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'walkers' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
@@ -392,6 +425,56 @@ const AdminDashboard: React.FC = () => {
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === 'users' && (
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+                        <div className="p-6 border-b border-gray-100">
+                            <h3 className="text-xl font-bold">Usuarios Registrados</h3>
+                            <p className="text-sm text-gray-500">Listado completo de dueños y paseadores.</p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                                    <tr>
+                                        <th className="px-6 py-4">Usuario</th>
+                                        <th className="px-6 py-4">Rol</th>
+                                        <th className="px-6 py-4">Fecha Registro</th>
+                                        <th className="px-6 py-4">Mascotas</th>
+                                        <th className="px-6 py-4">Reservas</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {users.length === 0 ? (
+                                        <tr><td colSpan={5} className="p-6 text-center text-gray-400">Cargando usuarios...</td></tr>
+                                    ) : users.map((user: any) => (
+                                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                                    <img src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}`} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-gray-900">{user.name}</div>
+                                                    <div className="text-xs text-gray-500">{user.email}</div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                                                        user.role === 'WALKER' ? 'bg-blue-100 text-blue-700' :
+                                                            'bg-green-100 text-green-700'
+                                                    }`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4 font-bold">{user._count?.pets || 0}</td>
+                                            <td className="px-6 py-4 font-bold">{user._count?.bookings || 0}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 

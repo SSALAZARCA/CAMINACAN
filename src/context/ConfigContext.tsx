@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
+import { API_URL } from '../api/config';
+
 // Define the Plan interface
 export interface Plan {
     id: string;
@@ -28,6 +30,7 @@ interface ConfigContextType {
     updatePlan: (id: string, updatedPlan: Partial<Plan>) => void;
     deletePlan: (id: string) => void;
     updateSystemConfig: (config: any) => Promise<void>;
+    getSystemConfig: () => Promise<any>;
 }
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
@@ -130,21 +133,50 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const updateSystemConfig = async (config: any) => {
         try {
-            await fetch('http://localhost:5000/api/admin/config', {
+            const token = localStorage.getItem('caminacan_token');
+            const res = await fetch(`${API_URL}/admin/config`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(config)
             });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.config && data.config.platformFee) {
+                    setFees(prev => ({ ...prev, commission: data.config.platformFee }));
+                }
+            }
         } catch (error) {
             console.error("Failed to update config", error);
         }
     };
 
+    const getSystemConfig = async () => {
+        try {
+            const token = localStorage.getItem('caminacan_token');
+            const res = await fetch(`${API_URL}/admin/config`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.platformFee) {
+                    setFees(prev => ({ ...prev, commission: data.platformFee }));
+                }
+                return data;
+            }
+            return null;
+        } catch (error) {
+            console.error("Failed to get config", error);
+            return null;
+        }
+    };
+
     return (
-        <ConfigContext.Provider value={{ fees, plans, updateFees, addPlan, updatePlan, deletePlan, updateSystemConfig }}>
+        <ConfigContext.Provider value={{ fees, plans, updateFees, addPlan, updatePlan, deletePlan, updateSystemConfig, getSystemConfig }}>
             {children}
         </ConfigContext.Provider>
     );
