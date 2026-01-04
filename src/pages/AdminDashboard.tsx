@@ -675,6 +675,50 @@ const AdminDashboard: React.FC = () => {
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in p-8">
                         <h3 className="text-xl font-bold mb-6">Configuración del Sistema</h3>
 
+                        {/* Payment Gateways */}
+                        <div className="bg-blue-50 p-6 rounded-2xl mb-8 border border-blue-100">
+                            <h4 className="font-bold text-blue-900 mb-2">Pasarela de Pagos (Wompi / PSE / Tarjetas)</h4>
+                            <p className="text-sm text-blue-800 mb-6">
+                                Configura tus llaves de API para recibir pagos. Estas credenciales las encuentras en el dashboard de tu proveedor (Wompi, MercadoPago).
+                            </p>
+
+                            <div className="space-y-6">
+                                {/* Wompi */}
+                                <div>
+                                    <h5 className="font-bold text-gray-800 mb-3 border-b pb-1">Wompi (Bancolombia)</h5>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Llave Pública (Public Key)</label>
+                                            <input type="text" placeholder="pub_prod_..." className="w-full px-4 py-2 border rounded-lg" value={smtpConfig.wompiPublicKey || ''} onChange={e => setSmtpConfig({ ...smtpConfig, wompiPublicKey: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Llave Privada (Private Key)</label>
+                                            <input type="password" placeholder="prv_prod_..." className="w-full px-4 py-2 border rounded-lg" value={smtpConfig.wompiPrivateKey || ''} onChange={e => setSmtpConfig({ ...smtpConfig, wompiPrivateKey: e.target.value })} />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Secreto de Integridad</label>
+                                            <input type="password" placeholder="prod_integrity_..." className="w-full px-4 py-2 border rounded-lg" value={smtpConfig.wompiIntegritySecret || ''} onChange={e => setSmtpConfig({ ...smtpConfig, wompiIntegritySecret: e.target.value })} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* MercadoPago */}
+                                <div>
+                                    <h5 className="font-bold text-gray-800 mb-3 border-b pb-1">MercadoPago</h5>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Public Key</label>
+                                            <input type="text" placeholder="TEST-..." className="w-full px-4 py-2 border rounded-lg" value={smtpConfig.mercadopagoPublicKey || ''} onChange={e => setSmtpConfig({ ...smtpConfig, mercadopagoPublicKey: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Access Token</label>
+                                            <input type="password" placeholder="TEST-..." className="w-full px-4 py-2 border rounded-lg" value={smtpConfig.mercadopagoAccessToken || ''} onChange={e => setSmtpConfig({ ...smtpConfig, mercadopagoAccessToken: e.target.value })} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="bg-yellow-50 p-6 rounded-2xl mb-8 border border-yellow-100">
                             <h4 className="font-bold text-yellow-800 mb-2">Servidor de Correo (SMTP)</h4>
                             <p className="text-sm text-yellow-700 mb-4">

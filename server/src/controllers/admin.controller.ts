@@ -162,7 +162,11 @@ export const updateConfig = async (req: AuthRequest, res: Response) => {
     try {
         if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only' });
 
-        const { host, port, user, pass, adminEmail, platformFee } = req.body;
+        const {
+            host, port, user, pass, adminEmail, platformFee,
+            wompiPublicKey, wompiPrivateKey, wompiIntegritySecret,
+            mercadopagoAccessToken, mercadopagoPublicKey
+        } = req.body;
 
         const config = await prisma.systemConfig.upsert({
             where: { key: 'default' },
@@ -172,7 +176,12 @@ export const updateConfig = async (req: AuthRequest, res: Response) => {
                 smtpUser: user,
                 smtpPass: pass,
                 adminEmail: adminEmail,
-                platformFee: platformFee ? Number(platformFee) : undefined
+                platformFee: platformFee ? Number(platformFee) : undefined,
+                wompiPublicKey,
+                wompiPrivateKey,
+                wompiIntegritySecret,
+                mercadopagoAccessToken,
+                mercadopagoPublicKey
             },
             create: {
                 key: 'default',
@@ -181,7 +190,12 @@ export const updateConfig = async (req: AuthRequest, res: Response) => {
                 smtpUser: user,
                 smtpPass: pass,
                 adminEmail: adminEmail,
-                platformFee: platformFee ? Number(platformFee) : 0.20
+                platformFee: platformFee ? Number(platformFee) : 0.20,
+                wompiPublicKey,
+                wompiPrivateKey,
+                wompiIntegritySecret,
+                mercadopagoAccessToken,
+                mercadopagoPublicKey
             }
         });
 

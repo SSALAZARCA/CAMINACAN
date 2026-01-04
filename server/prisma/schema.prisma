@@ -197,6 +197,15 @@ model SystemConfig {
   
   // Platform Settings
   platformFee   Float    @default(0.20)
+
+  // Payment Gateways
+  wompiPublicKey String?
+  wompiPrivateKey String?
+  wompiIntegritySecret String?
+  wompiEventsUrl String? // Para Webhooks 
+
+  mercadopagoAccessToken String?
+  mercadopagoPublicKey String?
   
   updatedAt     DateTime @updatedAt
 }
