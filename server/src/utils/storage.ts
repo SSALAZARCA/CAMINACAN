@@ -2,6 +2,7 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import path from 'path';
+import fs from 'fs';
 
 // Load env vars if not loaded
 import dotenv from 'dotenv';
@@ -33,10 +34,14 @@ if (storageProvider === 'cloudinary') {
     // Fallback to local
     storage = multer.diskStorage({
         destination: (req, file, cb) => {
-            cb(null, 'uploads/documents/');
+            const uploadPath = path.join(process.cwd(), 'uploads');
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+            cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
-            cb(null, Date.now() + path.extname(file.originalname));
+            cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'));
         }
     });
 }
