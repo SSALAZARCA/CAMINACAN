@@ -3,10 +3,12 @@ import { API_URL } from '../api/config';
 import { apiFetch } from '../api/fetch';
 
 // Define User type
+// Define User type
 export interface User {
     id: string;
     name: string;
     email: string;
+    avatar?: string;
     role: 'owner' | 'walker' | 'admin';
     walkerProfile?: any;
     pets?: any[];
@@ -16,6 +18,8 @@ interface AuthContextType {
     user: User | null;
     login: (email: string, pass: string) => Promise<boolean>;
     register: (name: string, email: string, pass: string) => Promise<boolean>;
+    updateProfile: (data: Partial<User> & { password?: string }) => Promise<boolean>;
+    deleteAccount: () => Promise<boolean>;
     logout: () => void;
     isAuthenticated: boolean;
     token: string | null;
@@ -113,6 +117,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const updateProfile = async (data: Partial<User> & { password?: string }): Promise<boolean> => {
+        try {
+            const token = localStorage.getItem('caminacan_token');
+            const response = await fetch(`${API_URL}/auth/me`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) return false;
+
+            const updatedData = await response.json();
+            const userData: User = {
+                id: updatedData.id,
+                name: updatedData.name,
+                email: updatedData.email,
+                role: updatedData.role.toLowerCase() as User['role'],
+                walkerProfile: updatedData.walkerProfile,
+                pets: updatedData.pets,
+            };
+
+            setUser(prev => ({ ...prev!, ...userData, avatar: updatedData.avatar }));
+            localStorage.setItem('caminacan_user', JSON.stringify({ ...userData, avatar: updatedData.avatar }));
+            return true;
+        } catch (error) {
+            console.error('Update profile error:', error);
+            return false;
+        }
+    };
+
+    const deleteAccount = async (): Promise<boolean> => {
+        try {
+            const token = localStorage.getItem('caminacan_token');
+            const response = await fetch(`${API_URL}/auth/me`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) return false;
+            logout();
+            return true;
+        } catch (error) {
+            console.error('Delete account error:', error);
+            return false;
+        }
+    };
+
     const logout = () => {
         setUser(null);
         localStorage.removeItem('caminacan_user');
@@ -122,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = localStorage.getItem('caminacan_token');
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user, token }}>
+        <AuthContext.Provider value={{ user, login, register, updateProfile, deleteAccount, logout, isAuthenticated: !!user, token }}>
             {children}
         </AuthContext.Provider>
     );

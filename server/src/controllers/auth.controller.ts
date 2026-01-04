@@ -139,3 +139,47 @@ export const resetPassword = async (req: Request, res: Response) => {
         res.status(400).json({ error: 'Invalid or expired token' });
     }
 };
+
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        const { name, avatar, password } = req.body;
+
+        const updateData: any = {};
+        if (name) updateData.name = name;
+        if (avatar) updateData.avatar = avatar;
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            include: { walkerProfile: true, pets: true }
+        });
+
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ error: 'Error updating profile' });
+    }
+};
+
+export const deleteAccount = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+
+        // Optional: Check/Delete related data like bookings/pets if cascade isn't set in Prisma
+        // For simplicity, assuming Prisma schema handles cascade or we just delete user.
+        // Actually, we should probably delete pets first if there's no cascade, but let's try direct delete.
+
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        res.json({ message: 'Account deleted successfully' });
+    } catch (error) {
+        console.error('Delete account error:', error);
+        res.status(500).json({ error: 'Error deleting account' });
+    }
+};

@@ -4,12 +4,13 @@ import { usePets, type Pet } from '../context/PetContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus, Trash2, Dog, Calendar, Clock, MapPin, Info, Activity, ShieldCheck, Heart, XCircle, Star } from 'lucide-react';
+import { LogOut, Plus, Trash2, Dog, Calendar, Clock, MapPin, Info, Activity, ShieldCheck, Heart, XCircle, Star, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import { Package } from 'lucide-react';
 
 const OrdersSection: React.FC<{ userEmail: string }> = ({ userEmail }) => {
+    // ... existing ...
     const { orders } = useStore();
     const userOrders = orders.filter(o => o.userId === userEmail);
 
@@ -47,13 +48,15 @@ const OrdersSection: React.FC<{ userEmail: string }> = ({ userEmail }) => {
 };
 
 const Dashboard: React.FC = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateProfile, deleteAccount } = useAuth();
     const { pets, addPet, removePet } = usePets();
     const { bookings } = useBookings();
     const { addReview } = useWalker();
     const navigate = useNavigate();
 
     const [isAddingPet, setIsAddingPet] = useState(false);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editForm, setEditForm] = useState({ name: '', avatar: '', password: '' });
     const [newPet, setNewPet] = useState({
         name: '', breed: '', age: '', size: 'Mediano' as const, image: '',
         medicalConditions: '', allergies: '', behavior: '', vaccines: '', walkingInstructions: ''
@@ -99,12 +102,49 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const success = await updateProfile(editForm);
+        if (success) {
+            alert('Perfil actualizado correctamente');
+            setIsEditingProfile(false);
+        } else {
+            alert('Error al actualizar el perfil');
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+            const success = await deleteAccount();
+            if (success) {
+                navigate('/');
+            } else {
+                alert('Error al eliminar la cuenta');
+            }
+        }
+    };
+
     return (
         <div className="container py-10 min-h-screen">
             <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 overflow-hidden">
-                        <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-full h-full object-cover" />
+                    <div className="relative group">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 overflow-hidden border-2 border-white shadow-sm">
+                            <img
+                                src={user?.avatar || "https://i.pravatar.cc/150?img=11"}
+                                alt="User"
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <button
+                            onClick={() => {
+                                setEditForm({ name: user?.name || '', avatar: user?.avatar || '', password: '' });
+                                setIsEditingProfile(true);
+                            }}
+                            className="absolute -bottom-1 -right-1 bg-white text-gray-700 p-1.5 rounded-full shadow-md hover:text-primary transition-colors"
+                        >
+                            <Pencil size={12} />
+                        </button>
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Hola, {user?.name}</h1>
@@ -511,6 +551,99 @@ const Dashboard: React.FC = () => {
                                         Enviar Reseña
                                     </button>
                                 </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Profile Edit Modal */}
+            <AnimatePresence>
+                {isEditingProfile && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden"
+                        >
+                            <div className="p-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-2xl font-bold">Editar Perfil</h3>
+                                    <button onClick={() => setIsEditingProfile(false)} className="text-gray-400 hover:text-gray-600">
+                                        <XCircle size={24} />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                                    <div className="flex justify-center mb-6">
+                                        <div className="relative group cursor-pointer w-24 h-24">
+                                            <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary transition-colors">
+                                                <img
+                                                    src={editForm.avatar || "https://i.pravatar.cc/150?img=11"}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            setEditForm({ ...editForm, avatar: reader.result as string });
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                            />
+                                            <div className="absolute bottom-0 right-0 bg-primary text-gray-900 p-1.5 rounded-full shadow-sm pointer-events-none">
+                                                <Pencil size={12} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Nombre Completo</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.name}
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                            className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Contraseña (Opcional)</label>
+                                        <input
+                                            type="password"
+                                            placeholder="Dejar en blanco para no cambiar"
+                                            value={editForm.password}
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, password: e.target.value }))}
+                                            className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                                        />
+                                    </div>
+
+                                    <div className="pt-4 space-y-3">
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-primary text-gray-900 font-bold py-3 rounded-xl hover:bg-yellow-400 shadow-lg shadow-yellow-400/20 transition-all"
+                                        >
+                                            Guardar Cambios
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteAccount}
+                                            className="w-full flex items-center justify-center gap-2 text-red-500 font-bold py-2 rounded-xl hover:bg-red-50 transition-colors text-sm"
+                                        >
+                                            <Trash2 size={16} /> Eliminar Cuenta
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </motion.div>
                     </div>
