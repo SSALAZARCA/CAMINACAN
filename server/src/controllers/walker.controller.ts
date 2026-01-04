@@ -117,6 +117,9 @@ export const registerWalker = async (req: Request, res: Response) => {
                 experience,
                 bio: about,
                 pricePerHour: parseFloat(price) || 15000,
+                idCard: documents.idCard,
+                policeRecord: documents.policeRecord,
+                certificate: documents.certificate
             }
         });
 

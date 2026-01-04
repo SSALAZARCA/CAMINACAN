@@ -55,6 +55,12 @@ model WalkerProfile {
   rating        Float     @default(5.0)
   badges        String[]  @default([])
   gallery       String[]  @default([])
+  
+  // Documents
+  idCard        String?
+  policeRecord  String?
+  certificate   String?
+
   availableSlots Json?    // Arreglo de strings o slots
   
   userId        String    @unique
