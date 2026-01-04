@@ -13,6 +13,13 @@ enum Role {
   ADMIN
 }
 
+enum WalkerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
 enum BookingStatus {
   PENDIENTE
   CONFIRMADO
@@ -53,6 +60,7 @@ model WalkerProfile {
   city          String
   neighborhood  String
   rating        Float     @default(5.0)
+  status        WalkerStatus @default(PENDING)
   badges        String[]  @default([])
   gallery       String[]  @default([])
   

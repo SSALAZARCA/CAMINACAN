@@ -69,11 +69,12 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const response = await fetch(`${API_URL}/walkers`);
             if (response.ok) {
                 const data = await response.json();
-                const mapped: ActiveWalker[] = data.map((w: any) => ({
+
+                const allWalkers = data.map((w: any) => ({
                     id: w.id,
                     name: w.user.name,
                     email: w.user.email,
-                    phone: '', // Not in public profile
+                    phone: '', // Not exposed publicly usually, but needed for admin
                     city: w.city,
                     neighborhood: w.neighborhood,
                     experience: w.experience,
@@ -82,15 +83,21 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     image: w.user.avatar || 'https://images.unsplash.com/photo-1517423568366-eb58959600c4?fit=crop&w=200&h=200',
                     badges: w.badges,
                     gallery: w.gallery || [],
-                    documents: { idCard: '', policeRecord: '', certificate: '' },
-                    dateApplied: '',
+                    documents: {
+                        idCard: w.idCard || '',
+                        policeRecord: w.policeRecord || '',
+                        certificate: w.certificate || ''
+                    },
+                    dateApplied: new Date().toLocaleDateString(), // Placeholder as created_at is on user
                     rating: w.rating,
                     walksCompleted: 0,
                     earnings: 0,
-                    status: 'Active',
+                    status: w.status === 'PENDING' ? 'Pending' : (w.status === 'APPROVED' ? 'Active' : 'Suspended'),
                     availableSlots: w.availableSlots || {}
                 }));
-                setActiveWalkers(mapped);
+
+                setActiveWalkers(allWalkers.filter((w: any) => w.status === 'Active' || w.status === 'Suspended'));
+                setApplicants(allWalkers.filter((w: any) => w.status === 'Pending'));
             }
         } catch (error) {
             console.error('Error fetching walkers:', error);
