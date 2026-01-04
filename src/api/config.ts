@@ -1,4 +1,11 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Asegurar que la URL termine en /api y no tenga doble slash
+apiUrl = apiUrl.replace(/\/$/, '');
+if (!apiUrl.endsWith('/api')) {
+    apiUrl += '/api';
+}
+
+export const API_URL = apiUrl;
 
 export const getHeaders = () => {
     const user = localStorage.getItem('caminacan_user');
