@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "prisma generate && tsc"
+    "build": "npx prisma generate && tsc",
+    "db:push": "npx prisma db push",
+    "db:deploy": "npx prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
