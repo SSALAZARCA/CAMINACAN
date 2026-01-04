@@ -136,50 +136,56 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <nav className="bg-gray-900 text-white p-4 sticky top-0 z-10">
-                <div className="container flex justify-between items-center">
-                    <h1 className="text-xl font-bold flex items-center gap-2">
-                        <BarChart2 /> Admin Panel
-                    </h1>
-                    <div className="flex items-center gap-6">
-                        <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
+            <nav className="bg-gray-900 text-white p-4 sticky top-0 z-10 w-full overflow-hidden">
+                <div className="container flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex w-full md:w-auto justify-between items-center">
+                        <h1 className="text-xl font-bold flex items-center gap-2">
+                            <BarChart2 /> Admin Panel
+                        </h1>
+                        <button onClick={handleLogout} className="md:hidden text-red-400 font-bold text-sm">
+                            <LogOut size={20} />
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-4 w-full md:w-auto overflow-hidden">
+                        <div className="flex gap-1 bg-gray-800 rounded-lg p-1 overflow-x-auto w-full md:w-auto mobile-scrollbar">
                             <button
                                 onClick={() => setActiveTab('financial')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'financial' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'financial' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Finanzas</button>
                             <button
                                 onClick={() => setActiveTab('applicants')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'applicants' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'applicants' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Solicitudes ({applicants.length})</button>
                             <button
                                 onClick={() => setActiveTab('users')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'users' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Usuarios</button>
                             <button
                                 onClick={() => setActiveTab('walkers')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'walkers' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'walkers' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Paseadores</button>
                             <button
                                 onClick={() => setActiveTab('store')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'store' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'store' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Tienda</button>
                             <button
                                 onClick={() => setActiveTab('planes')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'planes' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'planes' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Planes</button>
                             <button
                                 onClick={() => setActiveTab('config')}
-                                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'config' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+                                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap transition-all ${activeTab === 'config' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                             >Configuración</button>
                         </div>
-                        <button onClick={handleLogout} className="flex items-center gap-2 hover:text-red-400 font-bold text-sm">
+                        <button onClick={handleLogout} className="hidden md:flex items-center gap-2 hover:text-red-400 font-bold text-sm bg-gray-800 px-3 py-2 rounded-lg ml-2">
                             <LogOut size={16} /> Salir
                         </button>
                     </div>
                 </div>
             </nav>
 
-            <div className="container py-10">
+            <div className="container px-4 py-10">
 
                 {/* Stats & Charts */}
                 <div className="grid md:grid-cols-3 gap-6 mb-10">
@@ -244,12 +250,12 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                                 <div>
                                     <h3 className="text-xl font-bold">Resumen Financiero</h3>
                                     <p className="text-sm text-gray-500">Cálculos basados en: Comisión {fees.commission}% | Seguros e Impuestos.</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-left md:text-right">
                                     <p className="text-sm font-bold text-gray-400 uppercase">Total Pendiente de Pago</p>
                                     <p className="text-2xl font-bold text-gray-900">${payouts.reduce((sum, p) => sum + p.netPayout, 0).toLocaleString()}</p>
                                 </div>
@@ -461,8 +467,8 @@ const AdminDashboard: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-                                                        user.role === 'WALKER' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-green-100 text-green-700'
+                                                    user.role === 'WALKER' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-green-100 text-green-700'
                                                     }`}>
                                                     {user.role}
                                                 </span>
