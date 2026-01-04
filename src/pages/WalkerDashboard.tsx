@@ -24,6 +24,52 @@ const WalkerDashboard: React.FC = () => {
         navigate('/login');
     };
 
+    // --- ACCESS CONTROL: Check Walker Status ---
+    const status = user?.walkerProfile?.status;
+
+    if (status === 'PENDING') {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="bg-yellow-100 p-6 rounded-full mb-6 text-yellow-600 animate-pulse">
+                    <Clock size={48} />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Verificación en Proceso</h1>
+                <p className="text-gray-500 max-w-sm mb-8">
+                    Tu perfil de paseador se ha creado exitosamente. Estamos revisando tus documentos.
+                    Una vez aprobado, podrás acceder al panel de paseos.
+                </p>
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 w-full max-w-xs text-left">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                        <span className="text-sm font-bold text-gray-700">Estado: Pendiente</span>
+                    </div>
+                    <p className="text-xs text-gray-400">Tus datos están seguros y visibles para la administración.</p>
+                </div>
+                <button onClick={handleLogout} className="text-gray-400 font-medium hover:text-red-500 flex items-center gap-2">
+                    <LogOut size={18} /> Cerrar Sesión
+                </button>
+            </div>
+        );
+    }
+
+    if (status === 'REJECTED' || status === 'SUSPENDED') {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="bg-red-100 p-6 rounded-full mb-6 text-red-600">
+                    <Trash2 size={48} />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Restringido</h1>
+                <p className="text-gray-500 max-w-sm mb-8">
+                    Tu cuenta ha sido {status === 'REJECTED' ? 'rechazada' : 'suspendida'}.
+                    Contacta a soporte para más información.
+                </p>
+                <button onClick={handleLogout} className="text-gray-400 font-medium hover:text-red-500 flex items-center gap-2">
+                    <LogOut size={18} /> Cerrar Sesión
+                </button>
+            </div>
+        );
+    }
+
     // Screen Wake Lock & GPS
     React.useEffect(() => {
         let watchId: number | null = null;

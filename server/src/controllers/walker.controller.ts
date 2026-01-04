@@ -92,7 +92,7 @@ export const registerWalker = async (req: Request, res: Response) => {
                     name,
                     email,
                     password: hashedPassword,
-                    // role defaults to OWNER, will be upgraded to WALKER upon approval
+                    role: 'WALKER',
                 }
             });
         }
