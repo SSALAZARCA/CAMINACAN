@@ -31,7 +31,16 @@ const PORT = process.env.PORT || 9000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use('/uploads', express.static('uploads'));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+import fs from 'fs';
+import path from 'path';
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+    console.log('Created uploads directory at:', uploadsDir);
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // Socket.io Middleware for Authentication (Optional, simplified for now)
 io.on("connection", (socket) => {
