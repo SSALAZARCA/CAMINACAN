@@ -142,25 +142,32 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
-    const approveApplicant = (id: string) => {
-        setApplicants(prev => prev.filter(a => a.id !== id));
+    const updateStatus = async (id: string, status: string) => {
+        const token = localStorage.getItem('caminacan_token');
+        try {
+            const res = await fetch(`${API_URL}/walkers/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+            if (res.ok) {
+                fetchWalkers(); // Reload lists
+            }
+        } catch (error) {
+            console.error("Error updating status", error);
+        }
     };
 
-    const rejectApplicant = (id: string) => {
-        setApplicants(prev => prev.filter(a => a.id !== id));
-    };
+    const approveApplicant = (id: string) => updateStatus(id, 'APPROVED');
+    const rejectApplicant = (id: string) => updateStatus(id, 'REJECTED');
+    const suspendWalker = (id: string) => updateStatus(id, 'SUSPENDED');
+    const activateWalker = (id: string) => updateStatus(id, 'APPROVED');
 
-    const suspendWalker = (id: string) => {
-        setActiveWalkers(prev => prev.map(w => w.id === id ? { ...w, status: 'Suspended' } : w));
-    };
-
-    const activateWalker = (id: string) => {
-        setActiveWalkers(prev => prev.map(w => w.id === id ? { ...w, status: 'Active' } : w));
-    };
-
-    const deleteWalker = (id: string) => {
-        setActiveWalkers(prev => prev.filter(w => w.id !== id));
-    };
+    // For delete, we might not have a route yet. Assuming REJECTED is soft delete.
+    const deleteWalker = (id: string) => updateStatus(id, 'REJECTED');
 
     const addReview = async (reviewData: Omit<Review, 'id' | 'date'> & { bookingId: string }) => {
         try {

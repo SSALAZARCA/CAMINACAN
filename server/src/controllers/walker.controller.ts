@@ -133,3 +133,24 @@ export const registerWalker = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error registering walker' });
     }
 };
+
+export const updateWalkerStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!['APPROVED', 'REJECTED', 'SUSPENDED', 'PENDING'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const walker = await prisma.walkerProfile.update({
+            where: { id },
+            data: { status }
+        });
+
+        res.json(walker);
+    } catch (error) {
+        console.error("Error updating walker status", error);
+        res.status(500).json({ error: 'Error updating walker status' });
+    }
+};
