@@ -71,6 +71,12 @@ model Pet {
   age           Int
   notes         String?
   image         String?
+  size          String?
+  vaccines      String?
+  allergies     String?
+  medicalConditions String?
+  behavior      String?
+  walkingInstructions String?
   
   ownerId       String
   owner         User      @relation(fields: [ownerId], references: [id])

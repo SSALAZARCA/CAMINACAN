@@ -15,7 +15,7 @@ export const getMyPets = async (req: AuthRequest, res: Response) => {
 
 export const createPet = async (req: AuthRequest, res: Response) => {
     try {
-        const { name, breed, age, notes, image } = req.body;
+        const { name, breed, age, notes, image, size, vaccines, allergies, medicalConditions, behavior, walkingInstructions } = req.body;
         const pet = await prisma.pet.create({
             data: {
                 name,
@@ -23,6 +23,12 @@ export const createPet = async (req: AuthRequest, res: Response) => {
                 age: parseInt(age),
                 notes,
                 image,
+                size,
+                vaccines,
+                allergies,
+                medicalConditions,
+                behavior,
+                walkingInstructions,
                 ownerId: req.user!.userId,
             },
         });
