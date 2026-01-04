@@ -91,14 +91,8 @@ export const registerWalker = async (req: Request, res: Response) => {
                     name,
                     email,
                     password: hashedPassword,
-                    role: 'WALKER',
+                    // role defaults to OWNER, will be upgraded to WALKER upon approval
                 }
-            });
-        } else {
-            // Upgrade role if exists
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { role: 'WALKER' }
             });
         }
 
@@ -147,6 +141,13 @@ export const updateWalkerStatus = async (req: Request, res: Response) => {
             where: { id },
             data: { status }
         });
+
+        if (status === 'APPROVED') {
+            await prisma.user.update({
+                where: { id: walker.userId },
+                data: { role: 'WALKER' }
+            });
+        }
 
         res.json(walker);
     } catch (error) {
