@@ -95,6 +95,14 @@ export const registerWalker = async (req: Request, res: Response) => {
                     role: 'WALKER',
                 }
             });
+        } else {
+            // If user exists, ensure they are upgraded to WALKER role immediately
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { role: 'WALKER' }
+            });
+            // Reflect change in local object
+            user.role = 'WALKER';
         }
 
         const documents = {
