@@ -87,7 +87,12 @@ export const sendBookingConfirmation = async (email: string, bookingDetails: any
 };
 
 export const sendAdminWalkerNotification = async (walkerName: string) => {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@caminacan.com';
+    let adminEmail = process.env.ADMIN_EMAIL || 'admin@caminacan.com';
+    try {
+        const config = await prisma.systemConfig.findUnique({ where: { key: 'default' } });
+        if (config?.adminEmail) adminEmail = config.adminEmail;
+    } catch { }
+
     const html = `
     <h1>Nueva Solicitud de Paseador 🚶</h1>
     <p>El usuario <b>${walkerName}</b> ha enviado sus documentos para verificación.</p>
