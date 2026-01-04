@@ -10,10 +10,19 @@ import { API_URL, BASE_URL } from '../api/config';
 
 const AdminDashboard: React.FC = () => {
     const { logout } = useAuth();
-    const { applicants, activeWalkers, approveApplicant, rejectApplicant, suspendWalker, activateWalker, deleteWalker } = useWalker();
+    const { applicants, activeWalkers, approveApplicant, rejectApplicant, suspendWalker, activateWalker, deleteWalker, fetchWalkers } = useWalker();
     const { products, orders, addProduct, updateProduct, deleteProduct, updateOrderStatus } = useStore();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'financial' | 'applicants' | 'walkers' | 'store' | 'planes' | 'config' | 'users'>('financial');
+
+    // Auto-refresh walker data every 10 seconds to catch new applicants
+    React.useEffect(() => {
+        fetchWalkers(); // Initial fetch
+        const interval = setInterval(() => {
+            fetchWalkers();
+        }, 10000);
+        return () => clearInterval(interval);
+    }, [fetchWalkers]);
     const [smtpConfig, setSmtpConfig] = useState({
         host: '', port: '', user: '', pass: '', adminEmail: '',
         wompiPublicKey: '', wompiPrivateKey: '', wompiIntegritySecret: '',

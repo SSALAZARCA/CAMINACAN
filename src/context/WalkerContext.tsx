@@ -45,6 +45,7 @@ interface WalkerContextType {
     applicants: WalkerApplicant[];
     activeWalkers: ActiveWalker[];
     reviews: Review[];
+    fetchWalkers: () => Promise<void>;
     registerApplicant: (data: Omit<WalkerApplicant, 'id' | 'status' | 'dateApplied'>) => void;
     approveApplicant: (id: string) => void;
     rejectApplicant: (id: string) => void;
@@ -229,6 +230,7 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             applicants,
             activeWalkers,
             reviews,
+            fetchWalkers,
             registerApplicant,
             approveApplicant,
             rejectApplicant,
