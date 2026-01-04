@@ -35,9 +35,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 import fs from 'fs';
 import path from 'path';
-const uploadsDir = path.join(__dirname, '../uploads');
+const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
     console.log('Created uploads directory at:', uploadsDir);
 }
 app.use('/uploads', express.static(uploadsDir));
