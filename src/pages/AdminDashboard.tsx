@@ -14,7 +14,11 @@ const AdminDashboard: React.FC = () => {
     const { products, orders, addProduct, updateProduct, deleteProduct, updateOrderStatus } = useStore();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'financial' | 'applicants' | 'walkers' | 'store' | 'planes' | 'config' | 'users'>('financial');
-    const [smtpConfig, setSmtpConfig] = useState({ host: '', port: '', user: '', pass: '', adminEmail: '' });
+    const [smtpConfig, setSmtpConfig] = useState({
+        host: '', port: '', user: '', pass: '', adminEmail: '',
+        wompiPublicKey: '', wompiPrivateKey: '', wompiIntegritySecret: '',
+        mercadopagoPublicKey: '', mercadopagoAccessToken: ''
+    });
     const [isEditingProduct, setIsEditingProduct] = useState<number | null>(null);
     const [newProduct, setNewProduct] = useState({ name: '', price: '', category: 'Alimento', stock: '', description: '', image: '' });
 
@@ -83,7 +87,12 @@ const AdminDashboard: React.FC = () => {
                         port: config.smtpPort || '',
                         user: config.smtpUser || '',
                         pass: config.smtpPass || '',
-                        adminEmail: config.adminEmail || ''
+                        adminEmail: config.adminEmail || '',
+                        wompiPublicKey: config.wompiPublicKey || '',
+                        wompiPrivateKey: config.wompiPrivateKey || '',
+                        wompiIntegritySecret: config.wompiIntegritySecret || '',
+                        mercadopagoPublicKey: config.mercadopagoPublicKey || '',
+                        mercadopagoAccessToken: config.mercadopagoAccessToken || ''
                     });
                 }
             });
@@ -753,8 +762,12 @@ const AdminDashboard: React.FC = () => {
                                 <button
                                     onClick={async () => {
                                         if (!smtpConfig.host || !smtpConfig.user) return alert('Datos incompletos');
-                                        await updateSystemConfig(smtpConfig);
-                                        alert('Configuración guardada y servidor actualizado.');
+                                        const success = await updateSystemConfig(smtpConfig);
+                                        if (success) {
+                                            alert('Configuración guardada y servidor actualizado.');
+                                        } else {
+                                            alert('Error al guardar configuración. Verifique la conexión o contacte soporte.');
+                                        }
                                     }}
                                     className="bg-gray-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors"
                                 >

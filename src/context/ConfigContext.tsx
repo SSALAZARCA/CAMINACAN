@@ -29,7 +29,7 @@ interface ConfigContextType {
     addPlan: (plan: Omit<Plan, 'id'>) => void;
     updatePlan: (id: string, updatedPlan: Partial<Plan>) => void;
     deletePlan: (id: string) => void;
-    updateSystemConfig: (config: any) => Promise<void>;
+    updateSystemConfig: (config: any) => Promise<boolean>;
     getSystemConfig: () => Promise<any>;
 }
 
@@ -131,7 +131,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setPlans(prev => prev.filter(p => p.id !== id));
     };
 
-    const updateSystemConfig = async (config: any) => {
+    const updateSystemConfig = async (config: any): Promise<boolean> => {
         try {
             const token = localStorage.getItem('caminacan_token');
             const res = await fetch(`${API_URL}/admin/config`, {
@@ -147,9 +147,13 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 if (data.config && data.config.platformFee) {
                     setFees(prev => ({ ...prev, commission: data.config.platformFee }));
                 }
+                return true;
+            } else {
+                return false;
             }
         } catch (error) {
             console.error("Failed to update config", error);
+            return false;
         }
     };
 
