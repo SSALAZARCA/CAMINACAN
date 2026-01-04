@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllWalkers, getWalkerById, updateWalkerProfile, registerWalker, updateWalkerStatus } from '../controllers/walker.controller';
+import { getAllWalkers, getWalkerById, updateWalkerProfile, registerWalker, updateWalkerStatus, deleteWalker } from '../controllers/walker.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { upload } from '../utils/storage';
 
@@ -15,5 +15,6 @@ router.post('/register', upload.fields([
 ]), registerWalker);
 
 router.patch('/:id/status', authenticate, updateWalkerStatus);
+router.delete('/:id', authenticate, deleteWalker);
 
 export default router;

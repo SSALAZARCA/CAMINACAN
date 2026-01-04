@@ -190,8 +190,22 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const suspendWalker = (id: string) => updateStatus(id, 'SUSPENDED');
     const activateWalker = (id: string) => updateStatus(id, 'APPROVED');
 
-    // For delete, we might not have a route yet. Assuming REJECTED is soft delete.
-    const deleteWalker = (id: string) => updateStatus(id, 'REJECTED');
+    const deleteWalker = async (id: string) => {
+        try {
+            const token = localStorage.getItem('caminacan_token');
+            const res = await fetch(`${API_URL}/walkers/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (res.ok) {
+                fetchWalkers();
+            }
+        } catch (error) {
+            console.error("Error deleting walker", error);
+        }
+    };
 
     const addReview = async (reviewData: Omit<Review, 'id' | 'date'> & { bookingId: string }) => {
         try {

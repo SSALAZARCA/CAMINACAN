@@ -166,3 +166,24 @@ export const updateWalkerStatus = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error updating walker status' });
     }
 };
+
+export const deleteWalker = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const walker = await prisma.walkerProfile.delete({
+            where: { id }
+        });
+
+        // Downgrade user role back to OWNER
+        await prisma.user.update({
+            where: { id: walker.userId },
+            data: { role: 'OWNER' }
+        });
+
+        (req as any).io?.emit('walker_status_updated', { id, status: 'DELETED' });
+        res.json({ message: 'Walker deleted successfully' });
+    } catch (error) {
+        console.error("Error deleting walker", error);
+        res.status(500).json({ error: 'Error deleting walker' });
+    }
+};
