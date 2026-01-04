@@ -1,21 +1,23 @@
 import { Request, Response } from 'express';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-
-// Configurar con Access Token de Prueba (Reemplazar con el del usuario real)
-// Este es un token de prueba genérico o placeholder.
-// El usuario debería poner su propio token en .env
-const client = new MercadoPagoConfig({
-    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-8386927361734267-010216-527e5a72061e88863261642270929255-66778643'
-});
+import prisma from '../utils/db';
 
 export const createPaymentPreference = async (req: Request, res: Response) => {
     try {
-        const { items, orderId, purpose } = req.body;
-        // items: { id, title, quantity, price }[]
+        const { items, orderId } = req.body;
 
-        console.log("Creating preference for:", items);
+        // 1. Get Config from DB
+        const config = await prisma.systemConfig.findFirst();
+        const accessToken = config?.mercadopagoAccessToken || process.env.MERCADOPAGO_ACCESS_TOKEN;
 
+        if (!accessToken) {
+            return res.status(500).json({ error: 'MercadoPago not configured in admin settings' });
+        }
+
+        const client = new MercadoPagoConfig({ accessToken });
         const preference = new Preference(client);
+
+        const frontendUrl = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:5173';
 
         const result = await preference.create({
             body: {
@@ -27,9 +29,9 @@ export const createPaymentPreference = async (req: Request, res: Response) => {
                     currency_id: 'COP'
                 })),
                 back_urls: {
-                    success: "http://localhost:5173/dashboard?status=success",
-                    failure: "http://localhost:5173/dashboard?status=failure",
-                    pending: "http://localhost:5173/dashboard?status=pending"
+                    success: `${frontendUrl}/dashboard?status=success`,
+                    failure: `${frontendUrl}/tienda?status=failure`,
+                    pending: `${frontendUrl}/tienda?status=pending`
                 },
                 auto_return: "approved",
                 external_reference: orderId || `temp-${Date.now()}`,
