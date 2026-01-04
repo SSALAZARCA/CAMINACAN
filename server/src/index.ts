@@ -18,6 +18,23 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 
 const app = express();
+
+import fs from 'fs';
+import path from 'path';
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Created uploads directory at:', uploadsDir);
+}
+
+// Debug Middleware for Uploads
+app.use('/uploads', (req, res, next) => {
+    const filePath = path.join(uploadsDir, req.path);
+    console.log(`[UPLOAD REQUEST] ${req.path} -> Looking in: ${filePath} (Exists: ${fs.existsSync(filePath)})`);
+    next();
+});
+
+app.use('/uploads', express.static(uploadsDir));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
@@ -33,14 +50,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-import fs from 'fs';
-import path from 'path';
-const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('Created uploads directory at:', uploadsDir);
-}
-app.use('/uploads', express.static(uploadsDir));
+// ... moved up
 
 // Socket.io Middleware for Authentication (Optional, simplified for now)
 io.on("connection", (socket) => {
