@@ -1,38 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#F4D03F;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#F1C40F;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2E86C1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1B4F72;stop-opacity:1" />
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="2" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.2"/>
-    </filter>
-  </defs>
-
-  <!-- Background Circle with Gradient -->
-  <circle cx="256" cy="256" r="240" fill="url(#grad1)" stroke="#D4AC0D" stroke-width="10"/>
-
-  <!-- Dog Face Silhouette (Modern & Dynamic) -->
-  <g transform="translate(106, 126) scale(0.6)" filter="url(#shadow)">
-     <path fill="#17202A" d="M250,500c-75,0-140-40-180-100c-15-25-25-55-25-85c0-40,10-150,40-200C110,65,160,20,250,20s140,45,165,95c30,50,40,160,40,200c0,30-10,60-25,85C390,460,325,500,250,500z"/>
-     <!-- Snout Area (Lighter for depth) -->
-     <path fill="#2C3E50" d="M250,320c-40,0-75,10-90,40c-10,20-5,70,25,90c20,13,40,20,65,20s45-7,65-20c30-20,35-70,25-90C325,330,290,320,250,320z"/>
-     <!-- Nose -->
-     <ellipse cx="250" cy="355" rx="35" ry="25" fill="#17202A"/>
-     <!-- Tongue -->
-     <path fill="#E74C3C" d="M250,430c-15,0-30,5-30,20c0,25,13,40,30,40s30-15,30-40C280,435,265,430,250,430z"/>
-     <!-- Eyes -->
-     <circle cx="185" cy="240" r="18" fill="white"/>
-     <circle cx="315" cy="240" r="18" fill="white"/>
-     <circle cx="185" cy="240" r="6" fill="#17202A"/>
-     <circle cx="315" cy="240" r="6" fill="#17202A"/>
-     
-     <!-- Ears (Floppy) -->
-     <path fill="#17202A" d="M110,140c-30,10-60,40-70,80c-10,40,0,80,20,100c10-30,20-80,60-100L110,140z"/>
-     <path fill="#17202A" d="M390,140c30,10,60,40,70,80c10,40,0,80-20,100c-10-30-20-80-60-100L390,140z"/>
-  </g>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="pawGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FF9F43;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#EE5A24;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <g fill="url(#pawGradient)">
+        <path d="M176.5 237c-33.8 0-61.6-26-61.6-58.4 0-32.3 27.8-58.4 61.6-58.4 33.9 0 61.6 26.1 61.6 58.4 0 32.3-27.7 58.4-61.6 58.4zM335.5 237c-33.8 0-61.6-26-61.6-58.4 0-32.3 27.8-58.4 61.6-58.4 33.9 0 61.6 26.1 61.6 58.4 0 32.3-27.7 58.4-61.6 58.4zM90.9 335.8c-32.5 0-59.2-25.1-59.2-56.3 0-31.2 26.7-56.3 59.2-56.3 32.5 0 59.2 25.1 59.2 56.3 0 31.2-26.7 56.3-59.2 56.3zM421.1 335.8c-32.5 0-59.2-25.1-59.2-56.3 0-31.2 26.7-56.3 59.2-56.3 32.5 0 59.2 25.1 59.2 56.3 0 31.2-26.7 56.3-59.2 56.3zM256 502c-85 0-155-52.6-155-132.3 0-26.6 20.9-48.4 51-48.4 20.3 0 37.7 12.1 46.9 29.5 8.9 16.9 28.5 27.3 49.3 27.3l15.6 0c20.8 0 40.5-10.4 49.3-27.3 9.2-17.4 26.6-29.5 46.9-29.5 30.1 0 51 21.8 51 48.4 0 79.7-70 132.3-155 132.3z"/>
+    </g>
 </svg>
