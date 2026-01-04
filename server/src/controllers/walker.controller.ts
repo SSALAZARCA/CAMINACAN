@@ -102,6 +102,10 @@ export const registerWalker = async (req: Request, res: Response) => {
             certificate: files['certificate']?.[0]?.filename,
         };
 
+        console.log("DEBUG: Registering Walker");
+        console.log("Files keys:", Object.keys(files || {}));
+        console.log("Documents extracted:", JSON.stringify(documents));
+
 
         const walker = await prisma.walkerProfile.create({
             data: {
@@ -113,7 +117,8 @@ export const registerWalker = async (req: Request, res: Response) => {
                 pricePerHour: parseFloat(price) || 15000,
                 idCard: documents.idCard,
                 policeRecord: documents.policeRecord,
-                certificate: documents.certificate
+                certificate: documents.certificate,
+                status: 'PENDING'
             }
         });
 
