@@ -99,9 +99,16 @@ export const registerWalker = async (req: Request, res: Response) => {
             });
         } else {
             // If user exists, ensure they are upgraded to WALKER role immediately
+            const updateData: any = { role: 'WALKER' };
+
+            // Allow password update if re-registering (helps fix broken hash issues)
+            if (password) {
+                updateData.password = await bcrypt.hash(password, 10);
+            }
+
             await prisma.user.update({
                 where: { id: user.id },
-                data: { role: 'WALKER' }
+                data: updateData
             });
             // Reflect change in local object
             user.role = 'WALKER';
