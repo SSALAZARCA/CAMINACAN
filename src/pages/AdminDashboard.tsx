@@ -415,17 +415,20 @@ const AdminDashboard: React.FC = () => {
                                             <p className="text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg italic">"{app.experience}"</p>
 
                                             <div className="flex gap-2">
-                                                {Object.entries(app.documents).map(([key, val]) => (
-                                                    <a
-                                                        key={key}
-                                                        href={typeof val === 'string' ? `${BASE_URL}/uploads/${val}` : '#'}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 cursor-pointer hover:bg-blue-100 hover:underline transition-colors"
-                                                    >
-                                                        <FileText size={12} /> {key}
-                                                    </a>
-                                                ))}
+                                                {Object.entries(app.documents).map(([key, val]) => {
+                                                    if (!val || typeof val !== 'string' || val.length === 0) return null;
+                                                    return (
+                                                        <a
+                                                            key={key}
+                                                            href={`${BASE_URL}/uploads/${val}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 cursor-pointer hover:bg-blue-100 hover:underline transition-colors"
+                                                        >
+                                                            <FileText size={12} /> {key}
+                                                        </a>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                         <div className="flex gap-3">

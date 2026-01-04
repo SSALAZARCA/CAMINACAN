@@ -19,6 +19,11 @@ import { Server } from 'socket.io';
 
 const app = express();
 
+// Patch BigInt serialization for JSON
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 import fs from 'fs';
 import path from 'path';
 const uploadsDir = path.join(process.cwd(), 'uploads');
