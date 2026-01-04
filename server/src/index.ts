@@ -68,7 +68,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
-    res.json({ message: 'CaminaCan API is running 🐶' });
+    res.json({ message: 'CaminaCan API v1.1.0 is running 🐶 (Payment Update)' });
 });
 
 // Basic error handling
