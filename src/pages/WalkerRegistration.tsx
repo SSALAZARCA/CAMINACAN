@@ -49,9 +49,9 @@ const WalkerRegistration: React.FC = () => {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        registerApplicant({
+        const success = await registerApplicant({
             name: formData.name,
             email: formData.email,
             password: formData.password,
@@ -65,7 +65,7 @@ const WalkerRegistration: React.FC = () => {
             badges: ["Nuevo Ingreso"],
             documents: formData.documents
         });
-        setStep(3); // Success step
+        if (success) setStep(3);
     };
 
     return (

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/db';
 import { sendAdminWalkerNotification, sendWelcomeEmail } from '../utils/mailer';
+import bcrypt from 'bcryptjs';
 
 export const getAllWalkers = async (req: Request, res: Response) => {
     try {
@@ -73,6 +74,7 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
 
 export const registerWalker = async (req: Request, res: Response) => {
     try {
+        console.log("Processing Walker Registration for:", req.body.email);
         const { name, email, password, phone, city, neighborhood, experience, about, price } = req.body;
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
@@ -86,7 +88,7 @@ export const registerWalker = async (req: Request, res: Response) => {
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
             const passwordToHash = password || 'ChangeMe123';
-            const hashedPassword = await require('bcryptjs').hash(passwordToHash, 10);
+            const hashedPassword = await bcrypt.hash(passwordToHash, 10);
             user = await prisma.user.create({
                 data: {
                     name,
@@ -111,9 +113,7 @@ export const registerWalker = async (req: Request, res: Response) => {
             certificate: files['certificate']?.[0]?.filename,
         };
 
-        console.log("DEBUG: Registering Walker");
-        console.log("Files keys:", Object.keys(files || {}));
-        console.log("Documents extracted:", JSON.stringify(documents));
+
 
 
         const walker = await prisma.walkerProfile.create({

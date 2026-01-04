@@ -47,7 +47,7 @@ interface WalkerContextType {
     activeWalkers: ActiveWalker[];
     reviews: Review[];
     fetchWalkers: () => Promise<void>;
-    registerApplicant: (data: any) => void;
+    registerApplicant: (data: any) => Promise<boolean>;
     approveApplicant: (id: string) => void;
     rejectApplicant: (id: string) => void;
     suspendWalker: (id: string) => void;
@@ -153,17 +153,21 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const response = await fetch(`${API_URL}/walkers/register`, {
                 method: 'POST',
                 body: formData
-                // Content-Type header not set manually for FormData, browser sets it with boundary
             });
 
             if (response.ok) {
-                // Success Logic / Notification
                 console.log("Application submitted successfully");
+                return true;
             } else {
-                console.error("Failed to submit application");
+                const errData = await response.json().catch(() => ({}));
+                console.error("Failed to submit application", errData);
+                alert(`Error al registrar: ${errData.error || 'Verifica los datos'}`);
+                return false;
             }
         } catch (error) {
             console.error("Error registering applicant", error);
+            alert("Error de conexión al registrar.");
+            return false;
         }
     };
 
