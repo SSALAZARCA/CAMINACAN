@@ -6,6 +6,7 @@ if (!apiUrl.endsWith('/api')) {
 }
 
 export const API_URL = apiUrl;
+export const BASE_URL = apiUrl.replace(/\/api$/, '');
 
 export const getHeaders = () => {
     const user = localStorage.getItem('caminacan_user');

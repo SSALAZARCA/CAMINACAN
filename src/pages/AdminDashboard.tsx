@@ -6,7 +6,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, DollarSign, Users, Activity, BarChart2, CheckCircle, Clock, FileText, XCircle, Trash2, Plus, Edit2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { API_URL } from '../api/config';
+import { API_URL, BASE_URL } from '../api/config';
 
 const AdminDashboard: React.FC = () => {
     const { logout } = useAuth();
@@ -418,7 +418,7 @@ const AdminDashboard: React.FC = () => {
                                                 {Object.entries(app.documents).map(([key, val]) => (
                                                     <a
                                                         key={key}
-                                                        href={typeof val === 'string' ? `${API_URL}/uploads/${val}` : '#'}
+                                                        href={typeof val === 'string' ? `${BASE_URL}/uploads/${val}` : '#'}
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 cursor-pointer hover:bg-blue-100 hover:underline transition-colors"
