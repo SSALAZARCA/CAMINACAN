@@ -151,7 +151,15 @@ export const getSystemConfig = async (req: AuthRequest, res: Response) => {
         // Don't expose password if not needed, or send masked? 
         // Admin needs to see it to edit it? Usually we send empty or masked.
         // For simplicity sending plain text as it is super admin panel.
-        res.json(config || {});
+        if (!config) {
+            return res.json({
+                smtpHost: '', smtpPort: '', smtpUser: '', smtpPass: '', adminEmail: '',
+                wompiPublicKey: '', wompiPrivateKey: '', wompiIntegritySecret: '',
+                mercadopagoAccessToken: '', mercadopagoPublicKey: '',
+                platformFee: 0.20
+            });
+        }
+        res.json(config);
     } catch (error) {
         console.error('Error fetching config:', error);
         res.status(500).json({ error: 'Error fetching config' });
