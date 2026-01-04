@@ -19,6 +19,7 @@ const WalkerRegistration: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        password: '',
         phone: '',
         city: '',
         neighborhood: '',
@@ -53,6 +54,7 @@ const WalkerRegistration: React.FC = () => {
         registerApplicant({
             name: formData.name,
             email: formData.email,
+            password: formData.password,
             phone: formData.phone,
             city: formData.city,
             neighborhood: formData.neighborhood,
@@ -104,13 +106,24 @@ const WalkerRegistration: React.FC = () => {
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono / WhatsApp</label>
-                                <input
-                                    type="tel" required
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                    value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                                    <input
+                                        type="password" required minLength={6}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        placeholder="Crea una contraseña segura"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono / WhatsApp</label>
+                                    <input
+                                        type="tel" required
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -73,19 +73,20 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
 
 export const registerWalker = async (req: Request, res: Response) => {
     try {
-        const { name, email, phone, city, neighborhood, experience, about, price } = req.body;
+        const { name, email, password, phone, city, neighborhood, experience, about, price } = req.body;
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
         // In a real app, you would create a User first or link to existing auth
         // For now, we simulate user creation or assume it exists. 
         // This endpoint should ideally be protected or create a temporary "Applicant" record.
 
-        // Let's create a User + WalkerProfile for simplicity of the flow, using a placeholder password
+        // Let's create a User + WalkerProfile for simplicity of the flow.
 
         // Check if user exists
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
-            const hashedPassword = await require('bcryptjs').hash('ChangeMe123', 10);
+            const passwordToHash = password || 'ChangeMe123';
+            const hashedPassword = await require('bcryptjs').hash(passwordToHash, 10);
             user = await prisma.user.create({
                 data: {
                     name,
