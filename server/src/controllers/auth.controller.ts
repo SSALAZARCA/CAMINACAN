@@ -67,6 +67,7 @@ export const login = async (req: Request, res: Response) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                avatar: user.avatar,
                 walkerProfile: user.walkerProfile
             },
             token
@@ -90,6 +91,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            avatar: user.avatar,
             walkerProfile: user.walkerProfile,
             pets: user.pets
         });
