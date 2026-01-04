@@ -44,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             name: data.name,
                             email: data.email,
                             role: data.role.toLowerCase() as User['role'],
+                            avatar: data.avatar,
                             walkerProfile: data.walkerProfile,
                             pets: data.pets
                         });
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: data.user.name,
                 email: data.user.email,
                 role: data.user.role.toLowerCase() as User['role'],
+                avatar: data.user.avatar,
                 walkerProfile: data.user.walkerProfile,
                 pets: data.user.pets
             };
