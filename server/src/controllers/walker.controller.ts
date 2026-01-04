@@ -186,14 +186,19 @@ export const updateWalkerStatus = async (req: Request, res: Response) => {
 export const deleteWalker = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const walker = await prisma.walkerProfile.delete({
+
+        // 1. Find walker to get userId
+        const walker = await prisma.walkerProfile.findUnique({ where: { id } });
+        if (!walker) return res.status(404).json({ error: 'Walker not found' });
+
+        // 2. Delete Walker Profile
+        await prisma.walkerProfile.delete({
             where: { id }
         });
 
-        // Downgrade user role back to OWNER
-        await prisma.user.update({
-            where: { id: walker.userId },
-            data: { role: 'OWNER' }
+        // 3. Delete associated USER entirely (Hard Delete)
+        await prisma.user.delete({
+            where: { id: walker.userId }
         });
 
         (req as any).io?.emit('walker_status_updated', { id, status: 'DELETED' });

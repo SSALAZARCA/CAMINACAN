@@ -56,6 +56,26 @@ const AdminDashboard: React.FC = () => {
 
     const { token } = useAuth();
 
+    const deleteUser = async (id: string) => {
+        if (!confirm("¿ESTÁS SEGURO? Esta acción eliminará permanentemente al usuario y todos sus datos (Mascotas, Paseos, etc). No se puede deshacer.")) return;
+
+        try {
+            const res = await fetch(`${API_URL}/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setUsers(users.filter(u => u.id !== id));
+                alert("Usuario eliminado correctamente.");
+            } else {
+                alert("Error al eliminar usuario.");
+            }
+        } catch (error) {
+            console.error("Error deleting user", error);
+            alert("Error de conexión.");
+        }
+    };
+
     React.useEffect(() => {
         const fetchData = async () => {
             try {
@@ -697,6 +717,64 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 )}
 
+
+                {activeTab === 'users' && (
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+                        <div className="p-6 border-b border-gray-100">
+                            <h3 className="text-xl font-bold">Gestión de Usuarios</h3>
+                            <p className="text-sm text-gray-500">Administra todos los usuarios registrados en la plataforma.</p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                                    <tr>
+                                        <th className="px-6 py-4">Usuario</th>
+                                        <th className="px-6 py-4">Rol</th>
+                                        <th className="px-6 py-4">Mascotas</th>
+                                        <th className="px-6 py-4">Reservas</th>
+                                        <th className="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {users.map(u => (
+                                        <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                                        {u.avatar ? <img src={u.avatar} className="w-full h-full rounded-full object-cover" alt="" /> : u.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900">{u.name}</div>
+                                                        <div className="text-xs text-gray-500">{u.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                                                        u.role === 'WALKER' ? 'bg-green-100 text-green-700' :
+                                                            'bg-blue-100 text-blue-700'
+                                                    }`}>
+                                                    {u.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{u._count?.pets || 0}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{u._count?.bookings || 0}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => deleteUser(u.id)}
+                                                    className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors flex items-center gap-1 ml-auto"
+                                                    title="Eliminar usuario definitivamente"
+                                                >
+                                                    <Trash2 size={16} /> Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
 
                 {activeTab === 'config' && (
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in p-8">

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDashboardStats, getPayouts, processPayout, updateConfig, getUsers, getSystemConfig } from '../controllers/admin.controller';
+import { getDashboardStats, getPayouts, processPayout, updateConfig, getUsers, deleteUser, getSystemConfig } from '../controllers/admin.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -11,6 +11,7 @@ router.get('/payouts', getPayouts);
 router.post('/payouts/process', processPayout);
 
 router.get('/users', getUsers);
+router.delete('/users/:id', deleteUser);
 router.get('/config', getSystemConfig);
 router.post('/config', updateConfig);
 

@@ -138,6 +138,40 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+    try {
+        if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Admin only access' });
+        const { id } = req.params;
+
+        // Manual Cascade Delete to ensure clean removal
+        // 1. Delete Walker Profile if exists (this might have bookings linked to it)
+        try {
+            await prisma.walkerProfile.delete({ where: { userId: id } }).catch(() => { });
+        } catch (e) { }
+
+        // 2. Delete Pets
+        await prisma.pet.deleteMany({ where: { ownerId: id } });
+
+        // 3. Delete Messages & Notifications
+        await prisma.message.deleteMany({ where: { OR: [{ senderId: id }, { receiverId: id }] } });
+        await prisma.notification.deleteMany({ where: { userId: id } });
+
+        // 4. Delete Bookings & Reviews (Warning: This deletes history)
+        // Clean reviews first
+        await prisma.review.deleteMany({ where: { ownerId: id } });
+        // Clean bookings
+        await prisma.booking.deleteMany({ where: { ownerId: id } });
+
+        // Finally delete User
+        await prisma.user.delete({ where: { id } });
+
+        res.json({ message: 'User permanently deleted' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Error deleting user. Check dependencies.' });
+    }
+};
+
 // --- CONFIG ---
 
 export const getSystemConfig = async (req: AuthRequest, res: Response) => {
