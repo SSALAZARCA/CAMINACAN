@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { API_URL } from '../api/config';
+import { API_URL, BASE_URL } from '../api/config';
+import { io } from 'socket.io-client';
 
 export interface WalkerApplicant {
     id: string;
@@ -105,8 +106,30 @@ export const WalkerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     };
 
+
     useEffect(() => {
         fetchWalkers();
+
+        const socketUrl = BASE_URL || API_URL.replace('/api', '');
+        const socket = io(socketUrl);
+
+        socket.on('connect', () => {
+            console.log('Connected to socket for walker updates');
+        });
+
+        socket.on('walker_registered', () => {
+            console.log('New walker registered, refreshing lists...');
+            fetchWalkers();
+        });
+
+        socket.on('walker_status_updated', () => {
+            console.log('Walker status updated, refreshing lists...');
+            fetchWalkers();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const registerApplicant = async (data: any) => {

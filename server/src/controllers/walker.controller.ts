@@ -126,6 +126,9 @@ export const registerWalker = async (req: Request, res: Response) => {
         sendAdminWalkerNotification(user.name).catch(console.error);
         sendWelcomeEmail(user.email, user.name).catch(console.error);
 
+        // Socket Event
+        (req as any).io?.emit('walker_registered', walker);
+
         res.status(201).json({ message: 'Walker registered successfully', walker, documents });
     } catch (error) {
         console.error("Error registering walker:", error);
@@ -153,6 +156,9 @@ export const updateWalkerStatus = async (req: Request, res: Response) => {
                 data: { role: 'WALKER' }
             });
         }
+
+        // Socket Event
+        (req as any).io?.emit('walker_status_updated', walker);
 
         res.json(walker);
     } catch (error) {
