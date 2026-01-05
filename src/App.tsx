@@ -44,7 +44,7 @@ function App() {
                         <Route path="/tienda" element={<Tienda />} />
                         <Route path="/live-demo" element={<LiveTracking />} />
                         <Route path="/registro-paseador" element={<WalkerRegistration />} />
-                        <Route path="/mensajes" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+                        <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
                         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                         <Route path="/walker" element={<ProtectedRoute><WalkerDashboard /></ProtectedRoute>} />
                         <Route path="/login" element={<Login />} />
