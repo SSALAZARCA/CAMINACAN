@@ -167,6 +167,30 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const updateAvatar = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ error: 'No image uploaded' });
+        }
+
+        // Save filename or full URL depending on your strategy.
+        // Assuming we serve static from /uploads, we stick to filename for consistency with other files.
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { avatar: file.filename },
+            include: { walkerProfile: true }
+        });
+
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Update avatar error:', error);
+        res.status(500).json({ error: 'Error updating avatar' });
+    }
+};
+
 export const deleteAccount = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user?.userId;

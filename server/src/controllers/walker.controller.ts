@@ -52,16 +52,17 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
 
         const { bio, experience, pricePerHour, city, neighborhood, gallery } = req.body;
 
+        const updateData: any = {};
+        if (bio !== undefined) updateData.bio = bio;
+        if (experience !== undefined) updateData.experience = experience;
+        if (pricePerHour !== undefined) updateData.pricePerHour = Number(pricePerHour);
+        if (city !== undefined) updateData.city = city;
+        if (neighborhood !== undefined) updateData.neighborhood = neighborhood;
+        if (gallery !== undefined) updateData.gallery = gallery;
+
         const updatedProfile = await prisma.walkerProfile.update({
-            where: { userId }, // Update by userId as relation is 1:1
-            data: {
-                bio,
-                experience,
-                pricePerHour: parseFloat(pricePerHour),
-                city,
-                neighborhood,
-                gallery
-            }
+            where: { userId },
+            data: updateData
         });
 
         res.json(updatedProfile);

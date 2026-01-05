@@ -6,11 +6,41 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { API_URL, BASE_URL } from '../api/config';
+
 const WalkerDashboard: React.FC = () => {
-    const { logout, user } = useAuth();
+    const { logout, user, token } = useAuth();
     const { bookings, updateBookingStatus, updateLiveTracking } = useBookings();
     const { updateWalkerProfile } = useWalker();
     const navigate = useNavigate();
+
+    const avatarInputRef = React.useRef<HTMLInputElement>(null);
+
+    // Calculate Today's Earnings
+    const todayEarnings = bookings
+        .filter(b => b.walkerId === user?.id && (b.status === 'Finalizado' || b.status === 'FINALIZADO'))
+        .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !token) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            const res = await fetch(`${API_URL}/auth/me/avatar`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData
+            });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert("Error al subir foto.");
+            }
+        } catch (err) { console.error(err); }
+    };
 
     // Find first active or scheduled walk for this walker
     const myBookings = bookings.filter(b => b.walkerId === user?.id || (user?.email === 'ana@caminacan.com' && b.walkerId === 'walker-101'));
@@ -200,8 +230,17 @@ const WalkerDashboard: React.FC = () => {
             <nav className="bg-white shadow-sm p-4 sticky top-0 z-10">
                 <div className="container flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">
-                            {user?.name.charAt(0)}
+                        <div
+                            onClick={() => avatarInputRef.current?.click()}
+                            className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold cursor-pointer overflow-hidden relative border border-primary/20 hover:opacity-80 transition-opacity"
+                            title="Cambiar foto de perfil"
+                        >
+                            {user?.avatar ? (
+                                <img src={`${BASE_URL}/uploads/${user.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                user?.name?.charAt(0)
+                            )}
+                            <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} />
                         </div>
                         <div>
                             <p className="text-xs text-gray-500">Bienvenido,</p>
@@ -218,7 +257,7 @@ const WalkerDashboard: React.FC = () => {
                 <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
                     <p className="text-gray-400 text-sm mb-1">Ganancias de Hoy</p>
                     <div className="flex items-baseline gap-1 mb-4">
-                        <span className="text-4xl font-bold">$35.000</span>
+                        <span className="text-4xl font-bold">${todayEarnings.toLocaleString()}</span>
                         <span className="text-green-400 text-sm font-bold flex items-center gap-1">
                             <DollarSign size={12} /> Disponible
                         </span>
