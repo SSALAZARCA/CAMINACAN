@@ -3,6 +3,8 @@ import { API_URL, getHeaders } from '../api/config';
 
 export interface Booking {
     id: string;
+    ownerId: string;
+    walkerUserId: string;
     service: string;
     walkerId: string;
     walkerName: string;
@@ -71,6 +73,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 const data = await response.json();
                 const mappedBookings = data.map((b: any) => ({
                     id: b.id,
+                    ownerId: b.ownerId,
+                    walkerUserId: b.walker?.userId,
                     service: b.serviceType,
                     walkerId: b.walkerId,
                     walkerName: b.walker?.user?.name || 'Paseador',

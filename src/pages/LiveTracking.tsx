@@ -170,7 +170,7 @@ const LiveTracking: React.FC = () => {
                             {/* Photos Grid */}
                             <div className="grid grid-cols-2 gap-2">
                                 {normalizedData.liveData?.photos?.map((p: string, i: number) => (
-                                    <img key={i} src={p} className="w-full h-32 object-cover rounded-xl" />
+                                    <img key={i} src={p} loading="lazy" className="w-full h-32 object-cover rounded-xl bg-gray-200" />
                                 ))}
                                 {(!normalizedData.liveData?.photos || normalizedData.liveData.photos.length === 0) && (
                                     <div className="col-span-2 py-8 bg-gray-100 rounded-xl text-center text-gray-400 text-xs">
@@ -238,7 +238,7 @@ const LiveTracking: React.FC = () => {
                             <button className="flex-1 bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2">
                                 <Phone size={20} /> Llamar
                             </button>
-                            <button onClick={() => navigate('/messages')} className="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                            <button onClick={() => navigate('/messages', { state: { createChatWith: (normalizedData as any).walkerUserId } })} className="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
                                 <MessageCircle size={20} /> Chat
                             </button>
                         </div>

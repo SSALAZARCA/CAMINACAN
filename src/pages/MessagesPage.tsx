@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { API_URL } from '../api/config';
@@ -25,6 +26,7 @@ interface ChatMessage {
 const MessagesPage = () => {
     const { user } = useAuth();
     const { socket } = useChat();
+    const location = useLocation();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeChat, setActiveChat] = useState<Conversation | null>(null); // The other user
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -33,6 +35,33 @@ const MessagesPage = () => {
     useEffect(() => {
         fetchConversations();
     }, [user]);
+
+    // Handle deep link to chat
+    useEffect(() => {
+        const targetId = location.state?.createChatWith;
+        if (targetId) {
+            if (activeChat?.userId === targetId) return;
+
+            const existing = conversations.find(c => c.userId === targetId);
+            if (existing) {
+                loadChat(existing);
+            } else {
+                // Init temporary chat
+                const tempChat: Conversation = {
+                    userId: targetId,
+                    name: 'Chat',
+                    lastMessage: '',
+                    timestamp: new Date().toISOString(),
+                    unread: false
+                };
+                setActiveChat(tempChat);
+                // Try load history
+                fetch(`${API_URL}/messages/${targetId}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('caminacan_token')}` }
+                }).then(res => res.json()).then(setMessages).catch(console.error);
+            }
+        }
+    }, [location.state, conversations]);
 
     // Listener for incoming real-time messages
     useEffect(() => {
@@ -183,8 +212,8 @@ const MessagesPage = () => {
                                     return (
                                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[70%] p-3 rounded-2xl text-sm ${isMe
-                                                    ? 'bg-primary text-gray-900 rounded-br-none shadow-sm'
-                                                    : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none shadow-sm'
+                                                ? 'bg-primary text-gray-900 rounded-br-none shadow-sm'
+                                                : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none shadow-sm'
                                                 }`}>
                                                 {msg.content}
                                                 <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-yellow-700/60' : 'text-gray-400'}`}>

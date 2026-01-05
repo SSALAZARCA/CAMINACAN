@@ -528,8 +528,9 @@ const WalkerDashboard: React.FC = () => {
                 </div>
 
                 {/* Floating Chat Button */}
+                {/* Floating Chat Button */}
                 <button
-                    onClick={() => navigate('/messages')}
+                    onClick={() => navigate('/messages', { state: { createChatWith: activeWalk?.ownerId } })}
                     className="fixed bottom-24 right-6 bg-yellow-400 text-gray-900 p-4 rounded-full shadow-lg z-40 hover:scale-110 transition-transform"
                 >
                     <div className="relative">
@@ -558,7 +559,7 @@ const WalkerDashboard: React.FC = () => {
                                 <div className="flex flex-col items-center mb-6 shrink-0">
                                     <div className="w-24 h-24 bg-gray-100 rounded-full mb-3 overflow-hidden shadow-md border-4 border-white">
                                         {selectedPet.photo || selectedPet.image ? (
-                                            <img src={selectedPet.photo || selectedPet.image} alt={selectedPet.name} className="w-full h-full object-cover" />
+                                            <img src={selectedPet.photo || selectedPet.image} alt={selectedPet.name} loading="lazy" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-4xl">🐶</div>
                                         )}
