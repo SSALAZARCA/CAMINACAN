@@ -233,16 +233,25 @@ const WalkerDashboard: React.FC = () => {
         alert("Paseo finalizado. Esperando que el dueño confirme para liberar el pago.");
     };
 
-    const reportEvent = (id: string, type: 'pee' | 'poo' | 'hydration') => {
+    const reportEvent = async (id: string, type: 'pee' | 'poo' | 'hydration') => {
         if (!activeWalk) return;
         const currentData = activeWalk.liveData || { peeCount: 0, pooCount: 0, hydrationCount: 0, path: [], photos: [], incidents: [] };
-        // Safe cast as any for dynamic json properties
         const data = currentData as any;
-        updateLiveTracking(id, {
+
+        const updates = {
             peeCount: type === 'pee' ? (data.peeCount || 0) + 1 : data.peeCount,
             pooCount: type === 'poo' ? (data.pooCount || 0) + 1 : data.pooCount,
             hydrationCount: type === 'hydration' ? (data.hydrationCount || 0) + 1 : data.hydrationCount,
-        });
+        };
+
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        try {
+            await updateLiveTracking(id, updates);
+        } catch (error) {
+            console.error("Error reporting event:", error);
+            alert("Error de conexión.");
+        }
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -329,31 +338,44 @@ const WalkerDashboard: React.FC = () => {
 
                             {/* Live Controls */}
                             <div className="grid grid-cols-4 gap-3 mb-6">
-                                <button onClick={() => reportEvent(activeWalk.id, 'pee')} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-blue-50 text-blue-600">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); reportEvent(activeWalk.id, 'pee'); }}
+                                    className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-blue-50 text-blue-600 active:scale-95 transition-transform"
+                                >
                                     <Droplets size={20} />
                                     <span className="text-[10px] font-bold">Pipí ({activeWalk.liveData?.peeCount || 0})</span>
                                 </button>
-                                <button onClick={() => reportEvent(activeWalk.id, 'poo')} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-orange-50 text-orange-600">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); reportEvent(activeWalk.id, 'poo'); }}
+                                    className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-orange-50 text-orange-600 active:scale-95 transition-transform"
+                                >
                                     <Trash2 size={20} />
                                     <span className="text-[10px] font-bold">Popó ({activeWalk.liveData?.pooCount || 0})</span>
                                 </button>
-                                <button onClick={() => reportEvent(activeWalk.id, 'hydration')} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-cyan-50 text-cyan-600">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); reportEvent(activeWalk.id, 'hydration'); }}
+                                    className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-cyan-50 text-cyan-600 active:scale-95 transition-transform"
+                                >
                                     <Droplets size={20} fill="currentColor" />
                                     <span className="text-[10px] font-bold">Agua ({activeWalk.liveData?.hydrationCount || 0})</span>
                                 </button>
-                                <button onClick={addPhoto} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-purple-50 text-purple-600">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); addPhoto(); }}
+                                    className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-purple-50 text-purple-600 active:scale-95 transition-transform"
+                                >
                                     <Camera size={20} />
                                     <span className="text-[10px] font-bold">Foto ({activeWalk.liveData?.photos?.length || 0})</span>
                                 </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    capture="environment"
-                                />
                             </div>
+
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                capture="environment"
+                                onChange={handleFileChange}
+                            />
 
                             <button
                                 onClick={() => endWalk(activeWalk.id)}
