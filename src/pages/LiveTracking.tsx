@@ -120,11 +120,11 @@ const LiveTracking: React.FC = () => {
     const normalizedData = displayData as Booking | Record<string, any>;
 
     return (
-        <div className="bg-gray-100 h-[calc(100vh-80px)] relative overflow-hidden flex justify-center py-8">
-            <div className="w-full max-w-md bg-white h-full shadow-2xl relative flex flex-col rounded-[3rem] overflow-hidden border-8 border-gray-900">
+        <div className="bg-gray-100 h-[calc(100vh-80px)] relative overflow-hidden flex justify-center md:h-[calc(100vh-64px)] md:p-0 py-8">
+            <div className="w-full max-w-md md:max-w-full bg-white h-full shadow-xl md:shadow-none relative flex flex-col rounded-[3rem] md:rounded-none overflow-hidden border-8 md:border-0 border-gray-900">
 
-                {/* Status Bar */}
-                <div className="bg-gray-900 text-white px-8 py-4 flex justify-between text-xs items-center z-10 pt-8">
+                {/* Status Bar (Mobile Only) */}
+                <div className="md:hidden bg-gray-900 text-white px-8 py-4 flex justify-between text-xs items-center z-10 pt-8">
                     <span className="font-bold">9:41</span>
                     <div className="flex gap-2 items-center">
                         <Signal size={14} />
@@ -154,7 +154,7 @@ const LiveTracking: React.FC = () => {
 
                     {activeTab === 'map' ? (
                         <>
-                            <div id="map-container" className="flex-grow z-0"></div>
+                            <div id="map-container" className="flex-grow z-0 h-full w-full"></div>
                             {!activeWalk && (
                                 <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg z-[1000] animate-pulse">
                                     MODO DEMOSTRACIÓN
@@ -204,8 +204,8 @@ const LiveTracking: React.FC = () => {
                 </div>
 
                 {/* Interactive Bottom Sheet */}
-                <div className="bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 relative z-10 -mt-8 border-t border-gray-100">
-                    <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+                <div className="bg-white md:rounded-none rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 relative z-10 -mt-8 md:mt-0 border-t border-gray-100">
+                    <div className="md:hidden w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
 
                     <div className="flex justify-between items-center mb-8">
                         <div>
@@ -243,8 +243,8 @@ const LiveTracking: React.FC = () => {
                     )}
                 </div>
 
-                {/* iPhone Notch Simulation */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-20"></div>
+                {/* iPhone Notch Simulation (Mobile Only) */}
+                <div className="md:hidden absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-20"></div>
             </div>
         </div>
     );
