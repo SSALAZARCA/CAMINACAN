@@ -3,6 +3,7 @@ import { useBookings } from '../context/BookingContext';
 import type { Booking } from '../context/BookingContext';
 import { useNavigate } from 'react-router-dom';
 import { Battery, Signal, Phone, MessageCircle, CheckCircle2, Map as MapIcon, Image as ImageIcon } from 'lucide-react';
+import { API_URL, BASE_URL } from '../api/config';
 
 const LiveTracking: React.FC = () => {
     const { bookings, updateBookingStatus } = useBookings();
@@ -170,7 +171,7 @@ const LiveTracking: React.FC = () => {
                             {/* Photos Grid */}
                             <div className="grid grid-cols-2 gap-2">
                                 {normalizedData.liveData?.photos?.map((p: string, i: number) => (
-                                    <img key={i} src={p} loading="lazy" className="w-full h-32 object-cover rounded-xl bg-gray-200" />
+                                    <img key={i} src={p.startsWith('http') ? p : `${BASE_URL}/uploads/${p}`} loading="lazy" className="w-full h-32 object-cover rounded-xl bg-gray-200" />
                                 ))}
                                 {(!normalizedData.liveData?.photos || normalizedData.liveData.photos.length === 0) && (
                                     <div className="col-span-2 py-8 bg-gray-100 rounded-xl text-center text-gray-400 text-xs">

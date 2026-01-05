@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../utils/db';
+import fs from 'fs';
+import path from 'path';
 
 export const createBooking = async (req: AuthRequest, res: Response) => {
     try {
@@ -106,6 +108,25 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+
+        if (status === 'FINALIZADO') {
+            const currentBooking = await prisma.booking.findUnique({ where: { id } });
+            const liveData = (currentBooking?.liveData as any);
+            if (liveData?.photos && Array.isArray(liveData.photos)) {
+                liveData.photos.forEach((photo: string) => {
+                    if (!photo.startsWith('http')) {
+                        const filePath = path.join(__dirname, '../../uploads', photo);
+                        if (fs.existsSync(filePath)) {
+                            try {
+                                fs.unlinkSync(filePath);
+                            } catch (err) {
+                                console.error(`Failed to delete file ${filePath}:`, err);
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         const booking = await prisma.booking.update({
             where: { id },
