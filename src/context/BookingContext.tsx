@@ -147,18 +147,36 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const updateLiveTracking = async (id: string, data: Record<string, any>) => {
+        // 1. Instant Optimistic Update to Local State
+        setBookings(prevBookings => prevBookings.map(b => {
+            if (b.id === id) {
+                // Deep merge logic for liveData
+                const currentLive = b.liveData || {};
+                return {
+                    ...b,
+                    liveData: { ...currentLive, ...data } as any
+                };
+            }
+            return b;
+        }));
+
         try {
             const response = await fetch(`${API_URL}/bookings/${id}/live`, {
                 method: 'PATCH',
                 headers: getHeaders(),
                 body: JSON.stringify({ liveData: data })
             });
-            if (response.ok) {
-                // Optimistic update or fetch
+
+            if (!response.ok) {
+                // If fails, re-fetch to sync truth
+                console.error("Sync failed, refetching");
                 await fetchBookings();
             }
+            // Success: We keep the optimistic state, no need to re-fetch immediately for speed.
         } catch (error) {
             console.error('Error updating live tracking:', error);
+            // Revert on critical error
+            await fetchBookings();
         }
     };
 

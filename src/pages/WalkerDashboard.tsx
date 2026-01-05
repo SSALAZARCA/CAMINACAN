@@ -166,10 +166,19 @@ const WalkerDashboard: React.FC = () => {
         );
     }
 
+    const activeWalkRef = useRef(activeWalk);
+
+    useEffect(() => {
+        activeWalkRef.current = activeWalk;
+    }, [activeWalk]);
+
+    const pathBuffer = useRef<[number, number][]>([]);
+
     // Screen Wake Lock & GPS
     React.useEffect(() => {
         let watchId: number | null = null;
         let wakeLock: any = null;
+        let syncInterval: any = null;
 
         const requestWakeLock = async () => {
             if ('wakeLock' in navigator) {
@@ -184,12 +193,12 @@ const WalkerDashboard: React.FC = () => {
         };
 
         const handleVisibilityChange = async () => {
-            if (activeWalk && document.visibilityState === 'visible') {
+            if (activeWalkRef.current && document.visibilityState === 'visible') {
                 await requestWakeLock();
             }
         };
 
-        if (activeWalk) {
+        if (activeWalk?.id) {
             // 1. Silent Audio "Hack" for Background Execution
             // Playing a silent audio loop forces the browser to treat this tab as "media playing",
             // preventing fierce battery throttling and keeping Geolocation active in background.
@@ -199,17 +208,28 @@ const WalkerDashboard: React.FC = () => {
 
             audio.play().catch(e => console.log("Audio autoplay might be blocked, user interaction needed first.", e));
 
+            // Sync Interval (10s) to batch update server
+            syncInterval = setInterval(() => {
+                const currentWalk = activeWalkRef.current;
+                if (currentWalk && pathBuffer.current.length > 0) {
+                    const currentPath = (currentWalk.liveData as any)?.path || [];
+                    const pointsToAdd = [...pathBuffer.current];
+                    pathBuffer.current = []; // Clear buffer
+
+                    const newPath = [...currentPath, ...pointsToAdd];
+                    updateLiveTracking(currentWalk.id, { path: newPath });
+                }
+            }, 10000);
+
             // 2. Start GPS Watch
             if ('geolocation' in navigator) {
                 watchId = navigator.geolocation.watchPosition(
                     (position) => {
-                        const newPoint = [position.coords.latitude, position.coords.longitude];
-                        const currentPath = (activeWalk.liveData as any)?.path || [];
-                        const updatedPath = [...currentPath, newPoint];
-                        updateLiveTracking(activeWalk.id, { path: updatedPath });
+                        const newPoint: [number, number] = [position.coords.latitude, position.coords.longitude];
+                        pathBuffer.current.push(newPoint);
                     },
                     (error) => console.error("Error GPS:", error),
-                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
                 );
             }
 
@@ -221,17 +241,12 @@ const WalkerDashboard: React.FC = () => {
             return () => {
                 audio.pause();
                 audio.src = "";
+                if (syncInterval) clearInterval(syncInterval);
                 if (watchId !== null) navigator.geolocation.clearWatch(watchId);
                 if (wakeLock) wakeLock.release();
                 document.removeEventListener('visibilitychange', handleVisibilityChange);
             };
         }
-
-        return () => {
-            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-            if (wakeLock) wakeLock.release();
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
     }, [activeWalk?.id]);
 
     const startWalk = (id: string) => {
