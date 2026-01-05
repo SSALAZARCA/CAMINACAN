@@ -1,21 +1,23 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { API_URL } from '../api/config';
+import { API_URL, getHeaders } from '../api/config';
 import { useAuth } from './AuthContext';
 
 interface Message {
     id?: string;
     content: string;
     senderId: string;
+    receiverId?: string;
     createdAt?: string;
 }
 
 interface ChatContextType {
     socket: Socket | null;
     messages: Message[];
-    sendMessage: (room: string, content: string) => void;
+    sendMessage: (receiverId: string, content: string) => Promise<void>;
     joinRoom: (room: string) => void;
     currentRoom: string | null;
+    loadConversation: (otherUserId: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -29,7 +31,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         // Connect to same host but port 4000 (or API_URL base)
         const socketHost = API_URL.replace('/api', '');
-        // Example: http://localhost:4000/api -> http://localhost:4000
 
         const newSocket = io(socketHost);
         setSocket(newSocket);
@@ -42,6 +43,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         newSocket.on('receive_message', (data: Message) => {
+            // Append only if it belongs to current conversation or notify
             setMessages((prev) => [...prev, data]);
         });
 
@@ -53,26 +55,44 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const joinRoom = (room: string) => {
         if (socket) {
             socket.emit('join_room', room);
-            setCurrentRoom(room);
-            setMessages([]); // Clear (or ideally fetch history)
+            // setCurrentRoom(room); // Should be handled by loadConversation for UI state
         }
     };
 
-    const sendMessage = (room: string, content: string) => {
-        if (socket && user) {
-            const msgData = {
-                room,
-                content,
-                senderId: user.id,
-                createdAt: new Date().toISOString()
-            };
-            socket.emit('send_message', msgData);
-            setMessages((prev) => [...prev, msgData]);
+    const loadConversation = async (otherUserId: string) => {
+        try {
+            const res = await fetch(`${API_URL}/messages/${otherUserId}`, {
+                headers: getHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setMessages(data);
+                setCurrentRoom(otherUserId);
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    const sendMessage = async (receiverId: string, content: string) => {
+        if (!user) return;
+
+        try {
+            const res = await fetch(`${API_URL}/messages`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ receiverId, content })
+            });
+
+            if (res.ok) {
+                const savedMsg = await res.json();
+                setMessages(prev => [...prev, savedMsg]);
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
 
     return (
-        <ChatContext.Provider value={{ socket, messages, sendMessage, joinRoom, currentRoom }}>
+        <ChatContext.Provider value={{ socket, messages, sendMessage, joinRoom, currentRoom, loadConversation }}>
             {children}
         </ChatContext.Provider>
     );

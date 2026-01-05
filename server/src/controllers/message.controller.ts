@@ -115,8 +115,11 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
             }
         });
 
-        // Socket emission should happen via io instance (imported or passed)
-        // For now, we rely on the client emitting via socket as well or polling
+        // Emit socket event via request-attached io
+        const io = (req as any).io;
+        if (io) {
+            io.to(receiverId).emit('receive_message', message);
+        }
 
         res.status(201).json(message);
     } catch (error) {
