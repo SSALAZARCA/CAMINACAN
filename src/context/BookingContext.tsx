@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import { API_URL, getHeaders } from '../api/config';
 import { useAuth } from './AuthContext';
 
@@ -97,11 +98,24 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     useEffect(() => {
-        if (user) {
-            fetchBookings();
-        } else {
+        if (!user) {
             setBookings([]);
+            return;
         }
+
+        fetchBookings();
+
+        const socketHost = API_URL.replace('/api', '');
+        const socket = io(socketHost);
+
+        socket.on('booking_status_updated', () => {
+            console.log("Socket: Booking updated, refreshing...");
+            fetchBookings();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, [user]);
 
     const addBooking = async (booking: AddBookingDTO) => {

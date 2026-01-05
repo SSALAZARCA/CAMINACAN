@@ -8,6 +8,7 @@ import { LogOut, Plus, Trash2, Dog, Calendar, Clock, MapPin, Info, Activity, Shi
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../context/StoreContext';
 import { Package } from 'lucide-react';
+import { getImageUrl } from '../utils/imageHelper';
 
 const OrdersSection: React.FC<{ userEmail: string }> = ({ userEmail }) => {
     // ... existing ...
@@ -132,7 +133,7 @@ const Dashboard: React.FC = () => {
                     <div className="relative group shrink-0">
                         <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 overflow-hidden border-2 border-white shadow-sm">
                             <img
-                                src={user?.avatar || "https://i.pravatar.cc/150?img=11"}
+                                src={getImageUrl(user?.avatar)}
                                 alt="User"
                                 className="w-full h-full object-cover"
                             />
@@ -190,7 +191,7 @@ const Dashboard: React.FC = () => {
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="border border-gray-100 rounded-2xl p-4 flex gap-4 hover:shadow-md transition-shadow relative group"
                                     >
-                                        <img src={pet.image} alt={pet.name} className="w-20 h-20 rounded-xl object-cover bg-gray-100" />
+                                        <img src={getImageUrl(pet.image)} alt={pet.name} className="w-20 h-20 rounded-xl object-cover bg-gray-100" />
                                         <div className="flex-grow">
                                             <h3 className="font-bold text-lg">{pet.name}</h3>
                                             <p className="text-gray-500 text-sm">{pet.breed}</p>
@@ -425,7 +426,7 @@ const Dashboard: React.FC = () => {
                         >
                             {/* Modal Header */}
                             <div className="relative h-48">
-                                <img src={viewingPet.image} alt={viewingPet.name} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(viewingPet.image)} alt={viewingPet.name} className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                 <button
                                     onClick={() => setViewingPet(null)}
@@ -595,7 +596,7 @@ const Dashboard: React.FC = () => {
                                         <div className="relative group cursor-pointer w-24 h-24">
                                             <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary transition-colors">
                                                 <img
-                                                    src={editForm.avatar || "https://i.pravatar.cc/150?img=11"}
+                                                    src={getImageUrl(editForm.avatar)}
                                                     alt="Preview"
                                                     className="w-full h-full object-cover"
                                                 />
