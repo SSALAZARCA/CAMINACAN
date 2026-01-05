@@ -50,7 +50,7 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
         const userId = (req as any).user?.userId;
         if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-        const { bio, experience, pricePerHour, city, neighborhood, gallery } = req.body;
+        const { bio, experience, pricePerHour, city, neighborhood, gallery, availableSlots } = req.body;
 
         const updateData: any = {};
         if (bio !== undefined) updateData.bio = bio;
@@ -59,6 +59,7 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
         if (city !== undefined) updateData.city = city;
         if (neighborhood !== undefined) updateData.neighborhood = neighborhood;
         if (gallery !== undefined) updateData.gallery = gallery;
+        if (availableSlots !== undefined) updateData.availableSlots = availableSlots;
 
         const updatedProfile = await prisma.walkerProfile.update({
             where: { userId },

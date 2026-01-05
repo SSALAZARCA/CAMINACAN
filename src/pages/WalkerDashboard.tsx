@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X, HeartPulse } from 'lucide-react';
+import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X, HeartPulse, Settings, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { API_URL, BASE_URL } from '../api/config';
@@ -23,6 +23,50 @@ const WalkerDashboard: React.FC = () => {
 
     const avatarInputRef = React.useRef<HTMLInputElement>(null);
     const galleryInputRef = React.useRef<HTMLInputElement>(null);
+
+    // --- Work Config Logic ---
+    const [configLocation, setConfigLocation] = useState({ city: '', neighborhood: '' });
+    const [configSchedule, setConfigSchedule] = useState({
+        days: [] as number[],
+        startTime: '08:00',
+        endTime: '17:00'
+    });
+
+    useEffect(() => {
+        if (user?.walkerProfile) {
+            setConfigLocation({
+                city: user.walkerProfile.city || '',
+                neighborhood: user.walkerProfile.neighborhood || ''
+            });
+            const savedSlots = user.walkerProfile.availableSlots as any;
+            if (savedSlots?.schedule) {
+                setConfigSchedule(savedSlots.schedule);
+            }
+        }
+    }, [user]);
+
+    const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    const toggleDay = (idx: number) => {
+        setConfigSchedule(prev => {
+            if (prev.days.includes(idx)) return { ...prev, days: prev.days.filter(d => d !== idx) };
+            return { ...prev, days: [...prev.days, idx].sort() };
+        });
+    };
+
+    const handleSaveConfig = async () => {
+        const payload = {
+            city: configLocation.city,
+            neighborhood: configLocation.neighborhood,
+            availableSlots: {
+                ...(user?.walkerProfile?.availableSlots as any),
+                schedule: configSchedule
+            }
+        };
+        await updateWalkerProfile(payload);
+        alert("Configuración actualizada. Tus cambios serán visibles para los dueños.");
+    };
+
 
     // Calculate Today's Earnings
     const todayEarnings = bookings
@@ -488,6 +532,99 @@ const WalkerDashboard: React.FC = () => {
                         </div>
                     </div>
                 )}
+                {/* Work Config Section */}
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
+                            <Settings size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold">Configuración de Trabajo</h3>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Location */}
+                        <div>
+                            <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-700">
+                                <MapPin size={18} /> Zona de Cobertura
+                            </h4>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-xs text-gray-500 ml-1">Ciudad</label>
+                                    <input
+                                        value={configLocation.city}
+                                        onChange={e => setConfigLocation({ ...configLocation, city: e.target.value })}
+                                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 ml-1">Barrio(s)</label>
+                                    <input
+                                        value={configLocation.neighborhood}
+                                        onChange={e => setConfigLocation({ ...configLocation, neighborhood: e.target.value })}
+                                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                                        placeholder="Ej: Poblado, Laureles..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Schedule */}
+                        <div>
+                            <h4 className="font-bold mb-3 flex items-center gap-2 text-gray-700">
+                                <Clock size={18} /> Disponibilidad
+                            </h4>
+
+                            <div className="mb-4">
+                                <label className="text-xs text-gray-500 ml-1 mb-2 block">Días de Trabajo</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {daysOfWeek.map((day, idx) => (
+                                        <button
+                                            key={day}
+                                            onClick={() => toggleDay(idx)}
+                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${configSchedule.days.includes(idx)
+                                                ? 'bg-purple-600 text-white shadow-md'
+                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {day}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs text-gray-500 ml-1">Hora Inicio</label>
+                                    <input
+                                        type="time"
+                                        value={configSchedule.startTime}
+                                        onChange={ev => setConfigSchedule({ ...configSchedule, startTime: ev.target.value })}
+                                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 ml-1">Hora Fin</label>
+                                    <input
+                                        type="time"
+                                        value={configSchedule.endTime}
+                                        onChange={ev => setConfigSchedule({ ...configSchedule, endTime: ev.target.value })}
+                                        className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                        <button
+                            onClick={handleSaveConfig}
+                            className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors shadow-lg active:scale-95 flex items-center gap-2"
+                        >
+                            <CheckCircle2 size={18} /> Guardar Configuración
+                        </button>
+                    </div>
+                </div>
+
                 {/* Profile Section */}
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
                     <h2 className="font-bold text-gray-900 mb-4">Mi Perfil Público</h2>
