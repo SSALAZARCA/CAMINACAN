@@ -29,6 +29,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!user) return;
         // Connect to same host but port 4000 (or API_URL base)
         const socketHost = API_URL.replace('/api', '');
 

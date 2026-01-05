@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_URL, getHeaders } from '../api/config';
+import { useAuth } from './AuthContext';
 
 export interface Booking {
     id: string;
@@ -62,9 +63,11 @@ const mapStatus = (status: string) => {
 };
 
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user } = useAuth();
     const [bookings, setBookings] = useState<Booking[]>([]);
 
     const fetchBookings = async () => {
+        if (!user) return;
         try {
             const response = await fetch(`${API_URL}/bookings`, {
                 headers: getHeaders()
@@ -94,8 +97,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     useEffect(() => {
-        fetchBookings();
-    }, []);
+        if (user) {
+            fetchBookings();
+        } else {
+            setBookings([]);
+        }
+    }, [user]);
 
     const addBooking = async (booking: AddBookingDTO) => {
         try {

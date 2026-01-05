@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_URL, getHeaders } from '../api/config';
+import { useAuth } from './AuthContext';
 
 export interface Pet {
     id: string;
@@ -25,9 +26,11 @@ interface PetContextType {
 const PetContext = createContext<PetContextType | undefined>(undefined);
 
 export const PetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user } = useAuth();
     const [pets, setPets] = useState<Pet[]>([]);
 
     const fetchPets = async () => {
+        if (!user) return; // Guard clause inside function too
         try {
             const response = await fetch(`${API_URL}/pets`, {
                 headers: getHeaders()
@@ -42,8 +45,12 @@ export const PetProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     useEffect(() => {
-        fetchPets();
-    }, []);
+        if (user) {
+            fetchPets();
+        } else {
+            setPets([]);
+        }
+    }, [user]);
 
     const addPet = async (pet: Omit<Pet, 'id'>) => {
         try {
