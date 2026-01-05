@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X } from 'lucide-react';
+import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X, HeartPulse } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { API_URL, BASE_URL } from '../api/config';
@@ -545,18 +545,18 @@ const WalkerDashboard: React.FC = () => {
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white p-6 rounded-3xl w-full max-w-sm relative shadow-2xl"
+                                className="bg-white p-6 rounded-3xl w-full max-w-sm relative shadow-2xl max-h-[90vh] flex flex-col"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <button
                                     onClick={() => setSelectedPet(null)}
-                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"
                                 >
                                     <X size={24} />
                                 </button>
 
-                                <div className="flex flex-col items-center mb-6">
-                                    <div className="w-24 h-24 bg-gray-100 rounded-full mb-3 overflow-hidden shadow-md">
+                                <div className="flex flex-col items-center mb-6 shrink-0">
+                                    <div className="w-24 h-24 bg-gray-100 rounded-full mb-3 overflow-hidden shadow-md border-4 border-white">
                                         {selectedPet.photo || selectedPet.image ? (
                                             <img src={selectedPet.photo || selectedPet.image} alt={selectedPet.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -567,29 +567,50 @@ const WalkerDashboard: React.FC = () => {
                                     <p className="text-gray-500">{selectedPet.breed}, {selectedPet.age} años</p>
                                 </div>
 
-                                <div className="space-y-3 text-sm">
-                                    {selectedPet.weight && (
-                                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-gray-500">Peso</span>
-                                            <span className="font-bold">{selectedPet.weight} kg</span>
+                                <div className="space-y-4 text-sm overflow-y-auto pr-2 custom-scrollbar">
+                                    {/* Stats */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-gray-50 p-3 rounded-2xl text-center">
+                                            <p className="text-gray-400 text-xs mb-1">Peso</p>
+                                            <p className="font-bold text-gray-800 text-lg">{selectedPet.weight || '--'} <span className="text-xs font-normal">kg</span></p>
                                         </div>
-                                    )}
-                                    {selectedPet.behavior && (
-                                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-gray-500">Comportamiento</span>
-                                            <span className="font-bold text-right max-w-[60%]">{selectedPet.behavior}</span>
+                                        <div className="bg-gray-50 p-3 rounded-2xl text-center">
+                                            <p className="text-gray-400 text-xs mb-1">Tamaño</p>
+                                            <p className="font-bold text-gray-800 text-lg">{selectedPet.size || '--'}</p>
                                         </div>
-                                    )}
-                                    {selectedPet.medicalConditions && (
-                                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-gray-500">Condiciones Médicas</span>
-                                            <span className="font-bold text-red-500 text-right max-w-[60%]">{selectedPet.medicalConditions}</span>
-                                        </div>
-                                    )}
-                                    <div className="bg-yellow-50 p-3 rounded-xl mt-4">
-                                        <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-2"><Info size={14} /> Notas del Dueño</h4>
-                                        <p className="text-yellow-900">{selectedPet.notes || "Sin instrucciones especiales."}</p>
                                     </div>
+
+                                    {/* Health */}
+                                    {(selectedPet.medicalConditions || selectedPet.allergies || selectedPet.vaccines) && (
+                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100">
+                                            <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2"><HeartPulse size={16} /> Salud & Cuidados</h4>
+                                            {selectedPet.medicalConditions && <p className="mb-1"><span className="font-bold">Condiciones:</span> {selectedPet.medicalConditions}</p>}
+                                            {selectedPet.allergies && <p className="mb-1"><span className="font-bold">Alergias:</span> {selectedPet.allergies}</p>}
+                                            {selectedPet.vaccines && <p className="text-xs text-red-600 mt-2 bg-white/50 p-2 rounded-lg inline-block"><span className="font-bold">Vacunas:</span> {selectedPet.vaccines}</p>}
+                                        </div>
+                                    )}
+
+                                    {/* Walking Instructions & Behavior */}
+                                    <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 space-y-3">
+                                        <div>
+                                            <h4 className="font-bold text-blue-800 mb-1 flex items-center gap-2"><MapPin size={16} /> Instrucciones de Paseo</h4>
+                                            <p className="text-blue-900 leading-relaxed">{selectedPet.walkingInstructions || "Sin instrucciones específicas de paseo."}</p>
+                                        </div>
+                                        {selectedPet.behavior && (
+                                            <div className="pt-3 border-t border-blue-200/50">
+                                                <h4 className="font-bold text-blue-800 mb-1">Comportamiento</h4>
+                                                <p className="text-blue-900">{selectedPet.behavior}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* General Notes */}
+                                    {selectedPet.notes && (
+                                        <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
+                                            <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-2"><Info size={16} /> Notas del Dueño</h4>
+                                            <p className="text-yellow-900">{selectedPet.notes}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         </div>

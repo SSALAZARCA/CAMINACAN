@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useBookings } from '../context/BookingContext';
 import type { Booking } from '../context/BookingContext';
+import { useNavigate } from 'react-router-dom';
 import { Battery, Signal, Phone, MessageCircle, CheckCircle2, Map as MapIcon, Image as ImageIcon } from 'lucide-react';
 
 const LiveTracking: React.FC = () => {
     const { bookings, updateBookingStatus } = useBookings();
+    const navigate = useNavigate();
     const mapRef = useRef<any>(null);
     const markerRef = useRef<any>(null);
     const pathRef = useRef<any>(null);
@@ -236,7 +238,7 @@ const LiveTracking: React.FC = () => {
                             <button className="flex-1 bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2">
                                 <Phone size={20} /> Llamar
                             </button>
-                            <button className="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                            <button onClick={() => navigate('/messages')} className="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
                                 <MessageCircle size={20} /> Chat
                             </button>
                         </div>
