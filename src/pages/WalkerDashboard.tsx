@@ -15,6 +15,7 @@ const WalkerDashboard: React.FC = () => {
     const navigate = useNavigate();
 
     const avatarInputRef = React.useRef<HTMLInputElement>(null);
+    const galleryInputRef = React.useRef<HTMLInputElement>(null);
 
     // Calculate Today's Earnings
     const todayEarnings = bookings
@@ -37,7 +38,28 @@ const WalkerDashboard: React.FC = () => {
             if (res.ok) {
                 window.location.reload();
             } else {
-                alert("Error al subir foto.");
+                alert("Error al subir foto de perfil.");
+            }
+        } catch (err) { console.error(err); }
+    };
+
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !token) return;
+
+        const formData = new FormData();
+        formData.append('photo', file);
+
+        try {
+            const res = await fetch(`${API_URL}/walkers/gallery`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData
+            });
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert("Error al subir foto a galería.");
             }
         } catch (err) { console.error(err); }
     };
@@ -380,21 +402,20 @@ const WalkerDashboard: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-2">Galería de Fotos</label>
                             <div className="grid grid-cols-3 gap-2">
                                 {user?.walkerProfile?.gallery?.map((img: string, idx: number) => (
-                                    <img key={idx} src={img} alt={`Gallery ${idx}`} className="w-full h-24 object-cover rounded-lg" />
+                                    <img
+                                        key={idx}
+                                        src={img.startsWith('http') ? img : `${BASE_URL}/uploads/${img}`}
+                                        alt={`Gallery ${idx}`}
+                                        className="w-full h-24 object-cover rounded-lg"
+                                    />
                                 ))}
-                                <button className="w-full h-24 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-gray-200"
-                                    onClick={() => {
-                                        const url = prompt("Ingresa URL de la foto (o base64):");
-                                        if (url) {
-                                            // Call update profile
-                                            // const newGallery = [...(user.walkerProfile.gallery || []), url];
-                                            // updateWalkerProfile({ gallery: newGallery });
-                                        }
-                                    }}
+                                <button className="w-full h-24 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors"
+                                    onClick={() => galleryInputRef.current?.click()}
                                 >
                                     <Camera size={20} />
                                     <span className="text-xs">Agregar</span>
                                 </button>
+                                <input type="file" ref={galleryInputRef} className="hidden" accept="image/*" onChange={handleGalleryUpload} />
                             </div>
                         </div>
                     </div>

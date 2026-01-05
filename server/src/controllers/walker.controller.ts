@@ -68,7 +68,37 @@ export const updateWalkerProfile = async (req: Request, res: Response) => {
         res.json(updatedProfile);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error updating walker profile' });
+        res.status(500).json({ error: 'Error updating profile' });
+    }
+};
+
+export const uploadGalleryPhoto = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.userId;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+        // Get current gallery
+        const currentProfile = await prisma.walkerProfile.findUnique({ where: { userId } });
+        if (!currentProfile) return res.status(404).json({ error: 'Profile not found' });
+
+        const currentGallery = currentProfile.gallery || [];
+        // Limit gallery size if needed (e.g. 10 photos)
+        if (currentGallery.length >= 10) return res.status(400).json({ error: 'Gallery full (max 10)' });
+
+        const newGallery = [...currentGallery, file.filename];
+
+        const updatedProfile = await prisma.walkerProfile.update({
+            where: { userId },
+            data: { gallery: newGallery }
+        });
+
+        res.json(updatedProfile);
+    } catch (error) {
+        console.error("Gallery upload error", error);
+        res.status(500).json({ error: 'Error uploading photo' });
     }
 };
 // ... existing code
