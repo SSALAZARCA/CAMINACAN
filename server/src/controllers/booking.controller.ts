@@ -105,8 +105,16 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
                         // Exclude image (Base64) to prevent massive payload
                     }
                 },
-                walker: { include: { user: true } },
-                owner: true
+                walker: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true, email: true } // Exclude avatar
+                        }
+                    }
+                },
+                owner: {
+                    select: { id: true, name: true, email: true } // Exclude avatar
+                }
             },
             orderBy: { createdAt: 'desc' } // Frontend now handles chronological sort for schedule
         });
