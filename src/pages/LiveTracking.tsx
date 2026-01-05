@@ -16,22 +16,36 @@ const LiveTracking: React.FC = () => {
     const activeWalk = bookings.find(b => b.status === 'En Progreso' || b.status === 'Esperando Confirmación');
     const [activeTab, setActiveTab] = useState<'map' | 'report'>('map');
 
+    // Init Real Map for Active Walk
     useEffect(() => {
-        if (!activeWalk || mapRef.current) return;
+        if (activeTab !== 'map' || !activeWalk) return;
+
+        // Safety cleanup if ref exists but DOM was re-created
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
+        }
 
         const L = (window as any).L;
         if (!L) return;
 
-        // Init map
         const startPos = activeWalk.liveData?.path[0] || [4.6534, -74.0536];
-        mapRef.current = L.map('map-container').setView(startPos, 16);
+        const map = L.map('map-container').setView(startPos, 16);
+        mapRef.current = map;
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Layers
+        const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
-        }).addTo(mapRef.current);
+        });
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri'
+        });
 
-        markerRef.current = L.marker(startPos).addTo(mapRef.current);
-        pathRef.current = L.polyline(activeWalk.liveData?.path || [], { color: 'red', weight: 5 }).addTo(mapRef.current);
+        streets.addTo(map);
+        L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
+
+        markerRef.current = L.marker(startPos).addTo(map);
+        pathRef.current = L.polyline(activeWalk.liveData?.path || [], { color: 'red', weight: 5 }).addTo(map);
 
         return () => {
             if (mapRef.current) {
@@ -39,7 +53,7 @@ const LiveTracking: React.FC = () => {
                 mapRef.current = null;
             }
         };
-    }, [activeWalk]);
+    }, [activeWalk, activeTab]);
 
     // Update markers and path when live data changes
     useEffect(() => {
@@ -47,57 +61,65 @@ const LiveTracking: React.FC = () => {
         const path = activeWalk.liveData.path;
         if (path.length > 0) {
             const lastPos = path[path.length - 1];
-            markerRef.current.setLatLng(lastPos);
-            pathRef.current.setLatLngs(path);
+            if (markerRef.current) markerRef.current.setLatLng(lastPos);
+            if (pathRef.current) pathRef.current.setLatLngs(path);
             mapRef.current.panTo(lastPos);
         }
     }, [activeWalk?.liveData?.path]);
 
     // Demo Mode State for Marketing
     useEffect(() => {
-        if (!activeWalk && activeTab === 'map') {
-            const L = (window as any).L;
-            if (!L || mapRef.current) return;
+        if (activeWalk || activeTab !== 'map') return;
 
-            // Demo Coordinates (Simulated Walk)
-            const startPos = [4.6534, -74.0536]; // Park Virrey
-            mapRef.current = L.map('map-container').setView(startPos, 16);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(mapRef.current);
-
-            markerRef.current = L.marker(startPos).addTo(mapRef.current);
-
-            // Animated Path for Demo
-            const demoPath = [
-                [4.6534, -74.0536], [4.6536, -74.0534], [4.6538, -74.0532],
-                [4.6540, -74.0530], [4.6542, -74.0528], [4.6545, -74.0525]
-            ];
-            const polyline = L.polyline([], { color: 'red', weight: 5 }).addTo(mapRef.current);
-
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < demoPath.length) {
-                    const point = demoPath[i];
-                    polyline.addLatLng(point);
-                    markerRef.current.setLatLng(point);
-                    mapRef.current.panTo(point);
-                    i++;
-                } else {
-                    i = 0;
-                    polyline.setLatLngs([]);
-                }
-            }, 1000);
-
-            return () => {
-                clearInterval(interval);
-                if (mapRef.current) {
-                    mapRef.current.remove();
-                    mapRef.current = null;
-                }
-            };
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
         }
+
+        const L = (window as any).L;
+        if (!L) return;
+
+        // Demo Coordinates (Simulated Walk)
+        const startPos = [4.6534, -74.0536]; // Park Virrey
+        const map = L.map('map-container').setView(startPos, 16);
+        mapRef.current = map;
+
+        const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
+
+        streets.addTo(map);
+        L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
+
+        markerRef.current = L.marker(startPos).addTo(map);
+
+        // Animated Path for Demo
+        const demoPath = [
+            [4.6534, -74.0536], [4.6536, -74.0534], [4.6538, -74.0532],
+            [4.6540, -74.0530], [4.6542, -74.0528], [4.6545, -74.0525]
+        ];
+        const polyline = L.polyline([], { color: 'red', weight: 5 }).addTo(map);
+
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < demoPath.length) {
+                const point = demoPath[i];
+                polyline.addLatLng(point);
+                if (markerRef.current) markerRef.current.setLatLng(point);
+                map.panTo(point);
+                i++;
+            } else {
+                i = 0;
+                polyline.setLatLngs([]);
+            }
+        }, 1000);
+
+        return () => {
+            clearInterval(interval);
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
+        };
     }, [activeWalk, activeTab]);
 
     // Use simulated data if no active walk
