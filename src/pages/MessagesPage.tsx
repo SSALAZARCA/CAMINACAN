@@ -2,34 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
-import { API_URL } from '../api/config';
 import { User, MessageCircle, Send } from 'lucide-react';
-
-interface Conversation {
-    userId: string;
-    name: string;
-    avatar?: string;
-    lastMessage: string;
-    timestamp: string;
-    unread: boolean;
-}
-
-interface ChatMessage {
-    id: string;
-    content: string;
-    senderId: string;
-    receiverId: string;
-    createdAt: string;
-    read: boolean;
-}
+import type { Conversation } from '../context/ChatContext';
 
 const MessagesPage = () => {
     const { user } = useAuth();
-    const { socket } = useChat();
+    const { socket, conversations, messages, sendMessage, loadConversation, fetchConversations } = useChat();
     const location = useLocation();
-    const [conversations, setConversations] = useState<Conversation[]>([]);
+
     const [activeChat, setActiveChat] = useState<Conversation | null>(null); // The other user
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
 
     useEffect(() => {
@@ -44,9 +25,10 @@ const MessagesPage = () => {
 
             const existing = conversations.find(c => c.userId === targetId);
             if (existing) {
-                loadChat(existing);
+                setActiveChat(existing);
+                loadConversation(existing.userId);
             } else {
-                // Init temporary chat
+                // Init temporary chat UI
                 const tempChat: Conversation = {
                     userId: targetId,
                     name: 'Chat',
@@ -55,88 +37,20 @@ const MessagesPage = () => {
                     unread: false
                 };
                 setActiveChat(tempChat);
-                // Try load history
-                fetch(`${API_URL}/messages/${targetId}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('caminacan_token')}` }
-                }).then(res => res.json()).then(setMessages).catch(console.error);
+                loadConversation(targetId);
             }
         }
     }, [location.state, conversations]);
 
-    // Listener for incoming real-time messages
-    useEffect(() => {
-        if (!socket) return;
-        socket.on('receive_message', (msg: any) => {
-            // Update conversation list logic needed here (omitted for brevity, ideally refetch or optimistic update)
-            if (activeChat && (msg.senderId === activeChat.userId || msg.receiverId === activeChat.userId)) {
-                setMessages(prev => [...prev, msg]);
-            } else {
-                fetchConversations(); // Refresh list to show unread
-            }
-        });
-        return () => { socket.off('receive_message'); };
-    }, [socket, activeChat]);
-
-    const fetchConversations = async () => {
-        try {
-            const res = await fetch(`${API_URL}/messages/conversations`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('caminacan_token')}` }
-            });
-            if (res.ok) setConversations(await res.json());
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const loadChat = async (conversation: Conversation) => {
-        setActiveChat(conversation);
-        try {
-            const res = await fetch(`${API_URL}/messages/${conversation.userId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('caminacan_token')}` }
-            });
-            if (res.ok) {
-                setMessages(await res.json());
-                // Update local unread status
-                setConversations(prev => prev.map(c =>
-                    c.userId === conversation.userId ? { ...c, unread: false } : c
-                ));
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim() || !activeChat) return;
 
-        try {
-            const res = await fetch(`${API_URL}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('caminacan_token')}`
-                },
-                body: JSON.stringify({
-                    receiverId: activeChat.userId,
-                    content: newMessage
-                })
-            });
-
-            if (res.ok) {
-                const sentMsg = await res.json();
-                setMessages(prev => [...prev, sentMsg]);
-                setNewMessage('');
-
-                // Emit via socket for real-time update
-                if (socket) {
-                    socket.emit('send_message', { ...sentMsg, room: activeChat.userId }); // or specialized room logic
-                }
-            }
-        } catch (error) {
-            console.error(error);
-        }
+        await sendMessage(activeChat.userId, newMessage);
+        setNewMessage('');
     };
+
 
     return (
         <div className="bg-gray-50 min-h-screen py-8">
@@ -156,7 +70,10 @@ const MessagesPage = () => {
                             conversations.map(conv => (
                                 <div
                                     key={conv.userId}
-                                    onClick={() => loadChat(conv)}
+                                    onClick={() => {
+                                        setActiveChat(conv);
+                                        loadConversation(conv.userId);
+                                    }}
                                     className={`p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors ${activeChat?.userId === conv.userId ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -217,7 +134,7 @@ const MessagesPage = () => {
                                                 }`}>
                                                 {msg.content}
                                                 <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-yellow-700/60' : 'text-gray-400'}`}>
-                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                         </div>

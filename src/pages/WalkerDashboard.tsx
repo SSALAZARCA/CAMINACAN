@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
+import { useChat } from '../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X, HeartPulse, Settings, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +13,7 @@ const WalkerDashboard: React.FC = () => {
     const { logout, user, token } = useAuth();
     const { bookings, updateBookingStatus, updateLiveTracking, fetchBookings } = useBookings();
     const { updateWalkerProfile } = useWalker();
+    const { unreadCount } = useChat();
     const navigate = useNavigate();
 
     const [selectedPet, setSelectedPet] = useState<any | null>(null);
@@ -672,6 +674,11 @@ const WalkerDashboard: React.FC = () => {
                 >
                     <div className="relative">
                         <MessageCircle size={24} />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white font-bold">
+                                {unreadCount}
+                            </span>
+                        )}
                     </div>
                 </button>
 
