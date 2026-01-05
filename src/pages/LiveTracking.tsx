@@ -26,28 +26,35 @@ const LiveTracking: React.FC = () => {
             mapRef.current = null;
         }
 
-        const L = (window as any).L;
-        if (!L) return;
+        // Defer init to ensure DOM layout is ready
+        const initTimer = setTimeout(() => {
+            const L = (window as any).L;
+            if (!L) return;
 
-        const startPos = activeWalk.liveData?.path[0] || [4.6534, -74.0536];
-        const map = L.map('map-container').setView(startPos, 16);
-        mapRef.current = map;
+            const startPos = activeWalk.liveData?.path[0] || [4.6534, -74.0536];
+            const map = L.map('map-container').setView(startPos, 16);
+            mapRef.current = map;
 
-        // Layers
-        const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        });
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '© Esri'
-        });
+            // Layers
+            const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            });
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri'
+            });
 
-        streets.addTo(map);
-        L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
+            streets.addTo(map);
+            L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
 
-        markerRef.current = L.marker(startPos).addTo(map);
-        pathRef.current = L.polyline(activeWalk.liveData?.path || [], { color: 'red', weight: 5 }).addTo(map);
+            markerRef.current = L.marker(startPos).addTo(map);
+            pathRef.current = L.polyline(activeWalk.liveData?.path || [], { color: 'red', weight: 5 }).addTo(map);
+
+            // Force update layout
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }, 100);
 
         return () => {
+            clearTimeout(initTimer);
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;
@@ -76,45 +83,56 @@ const LiveTracking: React.FC = () => {
             mapRef.current = null;
         }
 
-        const L = (window as any).L;
-        if (!L) return;
+        // Defer init
+        const initTimer = setTimeout(() => {
+            const L = (window as any).L;
+            if (!L) return;
 
-        // Demo Coordinates (Simulated Walk)
-        const startPos = [4.6534, -74.0536]; // Park Virrey
-        const map = L.map('map-container').setView(startPos, 16);
-        mapRef.current = map;
+            // Demo Coordinates (Simulated Walk)
+            const startPos = [4.6534, -74.0536]; // Park Virrey
+            const map = L.map('map-container').setView(startPos, 16);
+            mapRef.current = map;
 
-        const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
+            const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
 
-        streets.addTo(map);
-        L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
+            streets.addTo(map);
+            L.control.layers({ "Mapa Calles": streets, "Satélite": satellite }).addTo(map);
 
-        markerRef.current = L.marker(startPos).addTo(map);
+            markerRef.current = L.marker(startPos).addTo(map);
 
-        // Animated Path for Demo
-        const demoPath = [
-            [4.6534, -74.0536], [4.6536, -74.0534], [4.6538, -74.0532],
-            [4.6540, -74.0530], [4.6542, -74.0528], [4.6545, -74.0525]
-        ];
-        const polyline = L.polyline([], { color: 'red', weight: 5 }).addTo(map);
+            // Animated Path for Demo
+            const demoPath = [
+                [4.6534, -74.0536], [4.6536, -74.0534], [4.6538, -74.0532],
+                [4.6540, -74.0530], [4.6542, -74.0528], [4.6545, -74.0525]
+            ];
+            const polyline = L.polyline([], { color: 'red', weight: 5 }).addTo(map);
 
-        let i = 0;
-        const interval = setInterval(() => {
-            if (i < demoPath.length) {
-                const point = demoPath[i];
-                polyline.addLatLng(point);
-                if (markerRef.current) markerRef.current.setLatLng(point);
-                map.panTo(point);
-                i++;
-            } else {
-                i = 0;
-                polyline.setLatLngs([]);
-            }
-        }, 1000);
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < demoPath.length) {
+                    const point = demoPath[i];
+                    polyline.addLatLng(point);
+                    if (markerRef.current) markerRef.current.setLatLng(point);
+                    map.panTo(point);
+                    i++;
+                } else {
+                    i = 0;
+                    polyline.setLatLngs([]);
+                }
+            }, 1000);
+
+            // Clean interval on unmount
+            (map as any)._demoInterval = interval;
+
+            // Force redraw
+            setTimeout(() => map.invalidateSize(), 300);
+
+        }, 100);
 
         return () => {
-            clearInterval(interval);
+            clearTimeout(initTimer);
+            if (mapRef.current && (mapRef.current as any)._demoInterval) clearInterval((mapRef.current as any)._demoInterval);
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;
