@@ -10,16 +10,21 @@ import { API_URL, BASE_URL } from '../api/config';
 
 const WalkerDashboard: React.FC = () => {
     const { logout, user, token } = useAuth();
-    const { bookings, updateBookingStatus, updateLiveTracking } = useBookings();
+    const { bookings, updateBookingStatus, updateLiveTracking, fetchBookings } = useBookings();
     const { updateWalkerProfile } = useWalker();
     const navigate = useNavigate();
+
+    // Force fetch latest bookings on mount
+    React.useEffect(() => {
+        fetchBookings();
+    }, []);
 
     const avatarInputRef = React.useRef<HTMLInputElement>(null);
     const galleryInputRef = React.useRef<HTMLInputElement>(null);
 
     // Calculate Today's Earnings
     const todayEarnings = bookings
-        .filter(b => b.walkerId === user?.walkerProfile?.id && (b.status === 'Finalizado' || b.status === 'FINALIZADO'))
+        .filter(b => b.status === 'Finalizado' || b.status === 'FINALIZADO')
         .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +70,7 @@ const WalkerDashboard: React.FC = () => {
     };
 
     // Find first active or scheduled walk for this walker
-    const myBookings = bookings.filter(b => b.walkerId === user?.walkerProfile?.id || (user?.email === 'ana@caminacan.com' && b.walkerId === 'walker-101'));
+    const myBookings = bookings;
     const activeWalk = myBookings.find(b => b.status === 'En Progreso');
 
     // Sort scheduled walks chronologically (Earliest first)
