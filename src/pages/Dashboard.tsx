@@ -54,6 +54,7 @@ const Dashboard: React.FC = () => {
     const { addReview } = useWalker();
     const navigate = useNavigate();
 
+    const [isConfirming, setIsConfirming] = useState<string | null>(null);
     const [isAddingPet, setIsAddingPet] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [editForm, setEditForm] = useState({ name: '', avatar: '', password: '' });
@@ -377,14 +378,17 @@ const Dashboard: React.FC = () => {
                                     )}
                                     {(booking.status === 'Esperando Confirmación' || booking.status === 'ESPERANDO_CONFIRMACION') && (
                                         <button
+                                            disabled={isConfirming === booking.id}
                                             onClick={async () => {
                                                 if (window.confirm("¿El paseo finalizó correctamente? Al confirmar, se liberará el pago al paseador.")) {
+                                                    setIsConfirming(booking.id);
                                                     await updateBookingStatus(booking.id, 'Finalizado');
+                                                    setIsConfirming(null);
                                                 }
                                             }}
-                                            className="w-full mt-3 bg-purple-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-sm animate-pulse"
+                                            className={`w-full mt-3 text-white text-xs font-bold py-2 rounded-lg shadow-sm transition-colors ${isConfirming === booking.id ? 'bg-gray-400 cursor-wait' : 'bg-purple-600 hover:bg-purple-700 animate-pulse'}`}
                                         >
-                                            CONFIRMAR FINALIZACIÓN
+                                            {isConfirming === booking.id ? "CONFIRMANDO..." : "CONFIRMAR FINALIZACIÓN"}
                                         </button>
                                     )}
                                     {booking.status === 'Finalizado' && (

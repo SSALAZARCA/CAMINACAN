@@ -116,6 +116,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const updateBookingStatus = async (id: string, status: string) => {
+        // Optimistic update
+        setBookings(prev => prev.map(b => b.id === id ? { ...b, status: status } : b));
+
         try {
             // Map back to backend status
             const backMap: Record<string, string> = {
@@ -134,9 +137,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             });
             if (response.ok) {
                 await fetchBookings();
+            } else {
+                await fetchBookings(); // Revert
             }
         } catch (error) {
             console.error('Error updating status:', error);
+            await fetchBookings(); // Revert
         }
     };
 
