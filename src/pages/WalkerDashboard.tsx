@@ -19,7 +19,7 @@ const WalkerDashboard: React.FC = () => {
 
     // Calculate Today's Earnings
     const todayEarnings = bookings
-        .filter(b => b.walkerId === user?.id && (b.status === 'Finalizado' || b.status === 'FINALIZADO'))
+        .filter(b => b.walkerId === user?.walkerProfile?.id && (b.status === 'Finalizado' || b.status === 'FINALIZADO'))
         .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +65,7 @@ const WalkerDashboard: React.FC = () => {
     };
 
     // Find first active or scheduled walk for this walker
-    const myBookings = bookings.filter(b => b.walkerId === user?.id || (user?.email === 'ana@caminacan.com' && b.walkerId === 'walker-101'));
+    const myBookings = bookings.filter(b => b.walkerId === user?.walkerProfile?.id || (user?.email === 'ana@caminacan.com' && b.walkerId === 'walker-101'));
     const activeWalk = myBookings.find(b => b.status === 'En Progreso');
 
     // Sort scheduled walks chronologically (Earliest first)
