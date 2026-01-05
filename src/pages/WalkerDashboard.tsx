@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { LogOut, MapPin, Navigation, Clock, DollarSign, Dog, Camera, Droplets, Trash2, Info, MessageCircle, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { API_URL, BASE_URL } from '../api/config';
 
@@ -13,6 +13,8 @@ const WalkerDashboard: React.FC = () => {
     const { bookings, updateBookingStatus, updateLiveTracking, fetchBookings } = useBookings();
     const { updateWalkerProfile } = useWalker();
     const navigate = useNavigate();
+
+    const [selectedPet, setSelectedPet] = useState<any | null>(null);
 
     // Force fetch latest bookings on mount
     React.useEffect(() => {
@@ -371,7 +373,17 @@ const WalkerDashboard: React.FC = () => {
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl">🐶</div>
                                 <div>
-                                    <h3 className="text-xl font-bold">{activeWalk.service}</h3>
+                                    <h3 className="text-xl font-bold flex items-center gap-2">
+                                        {activeWalk.service}
+                                        {activeWalk.pets && activeWalk.pets.length > 0 && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setSelectedPet(activeWalk.pets[0]); }}
+                                                className="bg-blue-100 text-blue-700 text-[10px] px-2 py-1 rounded-full flex items-center gap-1 hover:bg-blue-200"
+                                            >
+                                                <Info size={12} /> {activeWalk.pets[0].name}
+                                            </button>
+                                        )}
+                                    </h3>
                                     <p className="text-gray-500 text-sm flex items-center gap-1">
                                         <MapPin size={14} /> Localización Compartida
                                     </p>
@@ -514,6 +526,75 @@ const WalkerDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Floating Chat Button */}
+                <button
+                    onClick={() => navigate('/messages')}
+                    className="fixed bottom-24 right-6 bg-yellow-400 text-gray-900 p-4 rounded-full shadow-lg z-40 hover:scale-110 transition-transform"
+                >
+                    <div className="relative">
+                        <MessageCircle size={24} />
+                    </div>
+                </button>
+
+                {/* Pet Info Modal */}
+                <AnimatePresence>
+                    {selectedPet && (
+                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedPet(null)}>
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white p-6 rounded-3xl w-full max-w-sm relative shadow-2xl"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <button
+                                    onClick={() => setSelectedPet(null)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X size={24} />
+                                </button>
+
+                                <div className="flex flex-col items-center mb-6">
+                                    <div className="w-24 h-24 bg-gray-100 rounded-full mb-3 overflow-hidden shadow-md">
+                                        {selectedPet.photo || selectedPet.image ? (
+                                            <img src={selectedPet.photo || selectedPet.image} alt={selectedPet.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-4xl">🐶</div>
+                                        )}
+                                    </div>
+                                    <h2 className="text-2xl font-bold">{selectedPet.name}</h2>
+                                    <p className="text-gray-500">{selectedPet.breed}, {selectedPet.age} años</p>
+                                </div>
+
+                                <div className="space-y-3 text-sm">
+                                    {selectedPet.weight && (
+                                        <div className="flex justify-between border-b border-gray-100 pb-2">
+                                            <span className="text-gray-500">Peso</span>
+                                            <span className="font-bold">{selectedPet.weight} kg</span>
+                                        </div>
+                                    )}
+                                    {selectedPet.behavior && (
+                                        <div className="flex justify-between border-b border-gray-100 pb-2">
+                                            <span className="text-gray-500">Comportamiento</span>
+                                            <span className="font-bold text-right max-w-[60%]">{selectedPet.behavior}</span>
+                                        </div>
+                                    )}
+                                    {selectedPet.medicalConditions && (
+                                        <div className="flex justify-between border-b border-gray-100 pb-2">
+                                            <span className="text-gray-500">Condiciones Médicas</span>
+                                            <span className="font-bold text-red-500 text-right max-w-[60%]">{selectedPet.medicalConditions}</span>
+                                        </div>
+                                    )}
+                                    <div className="bg-yellow-50 p-3 rounded-xl mt-4">
+                                        <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-2"><Info size={14} /> Notas del Dueño</h4>
+                                        <p className="text-yellow-900">{selectedPet.notes || "Sin instrucciones especiales."}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
             </div>
         </div>

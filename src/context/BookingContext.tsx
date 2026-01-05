@@ -7,6 +7,7 @@ export interface Booking {
     walkerId: string;
     walkerName: string;
     petIds: string[];
+    pets: any[];
     date: string;
     time: string;
     status: string;
@@ -74,6 +75,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     walkerId: b.walkerId,
                     walkerName: b.walker?.user?.name || 'Paseador',
                     petIds: b.pets.map((p: any) => p.id),
+                    pets: b.pets,
                     date: b.date,
                     time: b.time,
                     status: mapStatus(b.status),
