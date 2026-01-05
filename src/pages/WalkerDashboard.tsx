@@ -67,7 +67,19 @@ const WalkerDashboard: React.FC = () => {
     // Find first active or scheduled walk for this walker
     const myBookings = bookings.filter(b => b.walkerId === user?.id || (user?.email === 'ana@caminacan.com' && b.walkerId === 'walker-101'));
     const activeWalk = myBookings.find(b => b.status === 'En Progreso');
-    const scheduledWalks = myBookings.filter(b => b.status === 'Confirmado' || b.status === 'Pendiente');
+
+    // Sort scheduled walks chronologically (Earliest first)
+    const scheduledWalks = myBookings
+        .filter(b => b.status === 'Confirmado' || b.status === 'Pendiente')
+        .sort((a, b) => {
+            try {
+                // Handle potential different date formats simply by string compare if ISO, else parse
+                // Since we use YYYY-MM-DD, string comparison works for date.
+                // Time comparison also works if HH:MM 24h.
+                if (a.date !== b.date) return a.date.localeCompare(b.date);
+                return a.time.localeCompare(b.time);
+            } catch (e) { return 0; }
+        });
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -358,7 +370,7 @@ const WalkerDashboard: React.FC = () => {
                 ) : (
                     <div className="text-center py-10 bg-white rounded-3xl border border-dashed border-gray-200">
                         <Dog className="mx-auto text-gray-300 mb-2" size={40} />
-                        <p className="text-gray-500">No tienes paseos pendientes para hoy.</p>
+                        <p className="text-gray-500">No tienes paseos pendientes.</p>
                     </div>
                 )}
 
@@ -366,7 +378,7 @@ const WalkerDashboard: React.FC = () => {
                 {scheduledWalks.length > 1 && (
                     <div>
                         <h2 className="font-bold text-gray-900 mb-4 px-2">Otros Programados</h2>
-                        <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100">
+                        <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 max-h-96 overflow-y-auto">
                             {scheduledWalks.slice(1).map(walk => (
                                 <div key={walk.id} className="flex items-center gap-4 p-4 border-b border-gray-50 last:border-0">
                                     <span className="font-bold text-gray-500 w-16">{walk.time}</span>
