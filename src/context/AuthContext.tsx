@@ -23,12 +23,14 @@ interface AuthContextType {
     logout: () => void;
     isAuthenticated: boolean;
     token: string | null;
+    loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -44,15 +46,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             name: data.name,
                             email: data.email,
                             role: data.role.toLowerCase() as User['role'],
-                            avatar: data.avatar,
+                            avatar: data.user?.avatar || data.avatar, // data structure might vary slightly
                             walkerProfile: data.walkerProfile,
                             pets: data.pets
                         });
+                    } else {
+                        // Token invalid
+                        localStorage.removeItem('caminacan_token');
+                        localStorage.removeItem('caminacan_user');
                     }
                 } catch (error) {
                     console.error('Error validating session:', error);
-                    // No need to call logout() here significantly as apiFetch handles 401 redirect
+                } finally {
+                    setLoading(false);
                 }
+            } else {
+                setLoading(false);
             }
         };
         fetchUser();
@@ -180,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = localStorage.getItem('caminacan_token');
 
     return (
-        <AuthContext.Provider value={{ user, login, register, updateProfile, deleteAccount, logout, isAuthenticated: !!user, token }}>
+        <AuthContext.Provider value={{ user, login, register, updateProfile, deleteAccount, logout, isAuthenticated: !!user, token, loading }}>
             {children}
         </AuthContext.Provider>
     );
