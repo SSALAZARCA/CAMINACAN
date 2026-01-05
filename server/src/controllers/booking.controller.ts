@@ -95,7 +95,19 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
                     { walker: { userId: userId } }
                 ]
             },
-            include: { pets: true, walker: { include: { user: true } }, owner: true },
+            include: {
+                pets: {
+                    select: {
+                        id: true,
+                        name: true,
+                        breed: true,
+                        size: true
+                        // Exclude image (Base64) to prevent massive payload
+                    }
+                },
+                walker: { include: { user: true } },
+                owner: true
+            },
             orderBy: { createdAt: 'desc' } // Frontend now handles chronological sort for schedule
         });
         res.json(bookings);
