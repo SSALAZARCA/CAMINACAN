@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingContext';
 import { useWalker } from '../context/WalkerContext';
@@ -71,7 +71,34 @@ const WalkerDashboard: React.FC = () => {
 
     // Find first active or scheduled walk for this walker
     const myBookings = bookings;
-    const activeWalk = myBookings.find(b => b.status === 'En Progreso');
+    const activeWalk = bookings.find(b => b.status === 'En Progreso' || b.status === 'EN_PROGRESO');
+
+    const [elapsedTime, setElapsedTime] = useState("00:00:00");
+
+    useEffect(() => {
+        let interval: any;
+        if (activeWalk && (activeWalk.status === 'En Progreso' || activeWalk.status === 'EN_PROGRESO')) {
+            const startTimeStr = activeWalk.liveData?.startTime;
+            if (startTimeStr) {
+                const startTime = new Date(startTimeStr).getTime();
+
+                const updateTimer = () => {
+                    const now = Date.now();
+                    const diff = Math.max(0, now - startTime);
+                    const hours = Math.floor(diff / 3600000);
+                    const minutes = Math.floor((diff % 3600000) / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    setElapsedTime(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                };
+
+                updateTimer(); // Initial call
+                interval = setInterval(updateTimer, 1000);
+            }
+        } else {
+            setElapsedTime("00:00:00");
+        }
+        return () => clearInterval(interval);
+    }, [activeWalk]);
 
     // Sort scheduled walks chronologically (Earliest first)
     const scheduledWalks = myBookings
@@ -332,6 +359,9 @@ const WalkerDashboard: React.FC = () => {
                                     <h3 className="text-xl font-bold">{activeWalk.service}</h3>
                                     <p className="text-gray-500 text-sm flex items-center gap-1">
                                         <MapPin size={14} /> Localización Compartida
+                                    </p>
+                                    <p className="text-green-600 text-lg font-mono font-bold flex items-center gap-2 mt-1">
+                                        <Clock size={16} /> {elapsedTime}
                                     </p>
                                 </div>
                             </div>
