@@ -245,18 +245,28 @@ const WalkerDashboard: React.FC = () => {
         });
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file && activeWalk) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                const currentPhotos = (activeWalk.liveData as any)?.photos || [];
-                updateLiveTracking(activeWalk.id, {
-                    photos: [...currentPhotos, base64String]
+        if (file && activeWalk && token) {
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            try {
+                const res = await fetch(`${API_URL}/bookings/${activeWalk.id}/photos`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
                 });
-            };
-            reader.readAsDataURL(file);
+                if (res.ok) {
+                    await fetchBookings();
+                    alert("Foto enviada exitosamente.");
+                } else {
+                    alert("Error al enviar foto.");
+                }
+            } catch (error) {
+                console.error("Error uploading photo", error);
+                alert("Error de conexión enviando foto.");
+            }
         }
     };
 

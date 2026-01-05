@@ -50,7 +50,7 @@ const OrdersSection: React.FC<{ userEmail: string }> = ({ userEmail }) => {
 const Dashboard: React.FC = () => {
     const { user, logout, updateProfile, deleteAccount } = useAuth();
     const { pets, addPet, removePet } = usePets();
-    const { bookings } = useBookings();
+    const { bookings, updateBookingStatus } = useBookings();
     const { addReview } = useWalker();
     const navigate = useNavigate();
 
@@ -373,6 +373,18 @@ const Dashboard: React.FC = () => {
                                             className="w-full mt-3 bg-green-500 text-white text-xs font-bold py-2 rounded-lg hover:bg-green-600 transition-colors animate-pulse"
                                         >
                                             VER EN VIVO
+                                        </button>
+                                    )}
+                                    {(booking.status === 'Esperando Confirmación' || booking.status === 'ESPERANDO_CONFIRMACION') && (
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm("¿El paseo finalizó correctamente? Al confirmar, se liberará el pago al paseador.")) {
+                                                    await updateBookingStatus(booking.id, 'Finalizado');
+                                                }
+                                            }}
+                                            className="w-full mt-3 bg-purple-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-sm animate-pulse"
+                                        >
+                                            CONFIRMAR FINALIZACIÓN
                                         </button>
                                     )}
                                     {booking.status === 'Finalizado' && (

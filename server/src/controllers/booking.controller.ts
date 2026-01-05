@@ -143,3 +143,34 @@ export const updateLiveTracking = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ error: 'Error updating live tracking' });
     }
 };
+
+export const uploadBookingPhoto = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+
+        if (!file) return res.status(400).json({ error: 'No image uploaded' });
+
+        const booking = await prisma.booking.findUnique({ where: { id } });
+        if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+        const currentLiveData = (booking.liveData as any) || {};
+        const currentPhotos = currentLiveData.photos || [];
+        const newPhotos = [...currentPhotos, file.filename];
+
+        const updated = await prisma.booking.update({
+            where: { id },
+            data: {
+                liveData: {
+                    ...currentLiveData,
+                    photos: newPhotos
+                }
+            }
+        });
+
+        res.json(updated);
+    } catch (error) {
+        console.error("Error uploading booking photo", error);
+        res.status(500).json({ error: 'Error uploading photo' });
+    }
+};
