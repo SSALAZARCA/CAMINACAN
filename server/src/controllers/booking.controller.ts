@@ -83,11 +83,18 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
 export const getMyBookings = async (req: AuthRequest, res: Response) => {
     try {
-        const isWalker = req.user?.role === 'WALKER';
+        const userId = req.user?.userId;
+        // Fetch bookings where user is EITHER the owner OR the walker
+        // This solves issues where token role might be outdated or user is both
         const bookings = await prisma.booking.findMany({
-            where: isWalker ? { walker: { userId: req.user?.userId } } : { ownerId: req.user?.userId },
+            where: {
+                OR: [
+                    { ownerId: userId },
+                    { walker: { userId: userId } }
+                ]
+            },
             include: { pets: true, walker: { include: { user: true } }, owner: true },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' } // Frontend now handles chronological sort for schedule
         });
         res.json(bookings);
     } catch (error) {
